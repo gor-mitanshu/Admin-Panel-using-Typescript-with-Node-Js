@@ -1,0 +1,33 @@
+.navbar {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-shadow: #32325d05 0 2px 5px -1px, #0000000d 0 1px 3px -1px !important;
+  font-size: 16px;
+}
+.toolbar-navbar {
+  padding: 0;
+  padding-left: 10px !important;
+  background: black !important;
+  color: white !important;
+}
+.menu-icon {
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  padding: 0 16px 0 0 !important;
+  font-size: 40px !important;
+}
+.navbar-title {
+  margin: 4px !important;
+  font-weight: bold !important;
+  font-size: 26px !important;
+}
+@media (max-width: 600px) {
+  .menu-icon {
+    display: none !important;
+  }
+  .navbar-title {
+    font-size: 22px !important;
+  }
+}

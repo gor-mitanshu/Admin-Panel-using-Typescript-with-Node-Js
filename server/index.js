@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
+const cors = require("cors");
+app.use(cors());
 const mongoose = require('mongoose');
 const User = require('./models/UserSchema');
 const bodyParser = require('body-parser');
@@ -57,13 +59,13 @@ app.post('/api/adminregister', async (req, res) => {
      }
 });
 
-app.get('/api/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
      try {
           const admin = await User.findOne({ email: req.body.email });
           if (!!admin) {
                const hashedPassword = await bcrypt.compare(req.body.password, admin.password);
-               const token = jwt.sign({ admin }, "auth",);
                if (!!hashedPassword) {
+                    const token = jwt.sign({ admin }, "auth",);
                     return res.status(200).send({
                          success: true,
                          message: "Login Successful",
@@ -72,14 +74,14 @@ app.get('/api/login', async (req, res) => {
                } else {
                     return res.status(401).send({
                          success: false,
-                         message: "Password does not match",
+                         message: "Invalid Password",
                          error
                     })
                }
           } else {
                return res.status(400).send({
                     success: false,
-                    message: "Email is not Registered",
+                    message: "User Not Found",
                     error
                })
           }
