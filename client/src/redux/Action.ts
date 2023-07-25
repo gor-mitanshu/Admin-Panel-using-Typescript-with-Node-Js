@@ -11,7 +11,7 @@ export const login =
   (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
     try {
       const response = await axios.post(
-        "http://localhost:9558/api/login",
+        `${process.env.REACT_APP_API}/api/login`,
         payload
       );
       const { token } = response.data.result;
