@@ -3,7 +3,7 @@ import { AppBar, Grid, Toolbar, Typography } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import "../Navbar/Navbar.css";
 
-const Navbar = ({ toogleSidebar }: any) => {
+const Navbar = ({ toogleSidebar }: any): JSX.Element => {
   const [isOpen, setOpen] = useState<boolean>(false);
   const toogleSiderbar = () => {
     setOpen(!isOpen);

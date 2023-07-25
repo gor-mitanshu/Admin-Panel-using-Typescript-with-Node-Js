@@ -10,12 +10,16 @@ import {
 } from "@mui/material";
 import { Dashboard, Logout } from "@mui/icons-material";
 import "../Sidebar/Sidebar.css";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "redux/Action";
 
-const Sidebar = () => {
-  // const navigate = useNavigate();
+const Sidebar = (): JSX.Element => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const Out = () => {
-    // navigate("");
+    navigate("/login");
+    dispatch<any>(logout());
   };
   return (
     <>

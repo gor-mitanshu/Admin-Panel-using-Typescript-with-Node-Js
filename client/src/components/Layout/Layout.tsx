@@ -5,7 +5,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import Navbar from "../Navbar/Navbar";
 
-const Layout = () => {
+const Layout = (): JSX.Element => {
   const [isOpen, setIsClose] = useState<boolean>(true);
 
   const toogleSidebar = (data: boolean | ((prevState: boolean) => boolean)) => {

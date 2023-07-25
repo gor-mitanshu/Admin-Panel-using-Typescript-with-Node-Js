@@ -75,14 +75,14 @@ app.post('/api/login', async (req, res) => {
                     return res.status(401).send({
                          success: false,
                          message: "Invalid Password",
-                         error
+
                     })
                }
           } else {
                return res.status(400).send({
                     success: false,
                     message: "User Not Found",
-                    error
+
                })
           }
      } catch (error) {

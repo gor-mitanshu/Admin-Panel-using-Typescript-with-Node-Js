@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   Button,
@@ -11,8 +11,9 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
+import { useNavigate } from "react-router-dom";
 
-const LoginPage = () => {
+const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
   const [password, setPassword] = useState<any>("");
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +21,7 @@ const LoginPage = () => {
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event: any) => event.preventDefault();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const showErrorWithTimeout = (errorMessage: string, timeout: number) => {
     setError(errorMessage);
@@ -27,19 +29,37 @@ const LoginPage = () => {
       setError(null);
     }, timeout);
   };
+  useEffect(() => {
+    setError(null);
+  }, [email, password]);
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
     if (!email && !password) {
       showErrorWithTimeout("Please Enter both Email and Password", 3000);
+      return;
     }
     if (!email) {
       showErrorWithTimeout("Please Enter a Valid Email", 3000);
+      return;
     }
     if (!password) {
       showErrorWithTimeout("Please Enter a Valid Password", 3000);
+      return;
     }
-    dispatch<any>(login({ email: email, password: password }));
+    try {
+      const response = await dispatch<any>(
+        login({ email: email, password: password })
+      );
+      if (!!response && response.data.success === true) {
+        navigate("/");
+      }
+      setEmail("");
+      setPassword("");
+    } catch (error: any) {
+      console.log(error);
+      showErrorWithTimeout(error.response.data.message, 3000);
+    }
   };
 
   return (

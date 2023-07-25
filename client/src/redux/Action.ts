@@ -14,15 +14,17 @@ export const login =
         "http://localhost:9558/api/login",
         payload
       );
-      console.log(response);
       const { token } = response.data.result;
       localStorage.setItem("auth", token);
       dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
+      return response;
     } catch (error: any) {
+      console.log(error);
       dispatch({
         type: AuthActionTypes.LOGIN_FAILURE,
         payload: error.response.data.message,
       });
+      throw error;
     }
   };
 
