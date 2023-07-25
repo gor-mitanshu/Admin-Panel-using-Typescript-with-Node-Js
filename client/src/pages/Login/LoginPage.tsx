@@ -36,15 +36,15 @@ const LoginPage = (): JSX.Element => {
   const handleLogin = async (e: any) => {
     e.preventDefault();
     if (!email && !password) {
-      showErrorWithTimeout("Please Enter both Email and Password", 3000);
+      showErrorWithTimeout("Please Enter both Email and Password", 4000);
       return;
     }
     if (!email) {
-      showErrorWithTimeout("Please Enter a Valid Email", 3000);
+      showErrorWithTimeout("Please Enter a Valid Email", 4000);
       return;
     }
     if (!password) {
-      showErrorWithTimeout("Please Enter a Valid Password", 3000);
+      showErrorWithTimeout("Please Enter a Valid Password", 4000);
       return;
     }
     try {
@@ -58,7 +58,7 @@ const LoginPage = (): JSX.Element => {
       setPassword("");
     } catch (error: any) {
       console.log(error);
-      showErrorWithTimeout(error.response.data.message, 3000);
+      showErrorWithTimeout(error.response.data.message, 4000);
     }
   };
 
@@ -67,8 +67,9 @@ const LoginPage = (): JSX.Element => {
       <Container component="main" maxWidth="xs">
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: 15,
             display: "flex",
+            justifyContent: "center",
             flexDirection: "column",
             alignItems: "center",
           }}
@@ -76,7 +77,11 @@ const LoginPage = (): JSX.Element => {
           <Typography variant="h4" component="h1">
             Login
           </Typography>
-          {error && <Typography color="error">{error}</Typography>}
+          {error && (
+            <Typography color="error" fontWeight={700}>
+              {error}
+            </Typography>
+          )}
           <form onSubmit={handleLogin}>
             <TextField
               margin="normal"
