@@ -22,7 +22,7 @@ const Sidebar = (): JSX.Element => {
   const dispatch = useDispatch();
   const { logoutHandle }: any = useAuth();
 
-  const Out = () => {
+  const handleLogout = () => {
     dispatch<any>(logout());
     logoutHandle();
     navigate("/login");
@@ -67,7 +67,7 @@ const Sidebar = (): JSX.Element => {
             >
               <ListItemButton
                 className="sidebar-listitem-active-btn"
-                onClick={Out}
+                onClick={handleLogout}
               >
                 <ListItemIcon className="sidebar-icon">
                   <Logout />

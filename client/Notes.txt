@@ -25,19 +25,37 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "pages/Login/LoginPage";
 import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/Dashboard";
+import { AuthProvider } from "context/authContext";
+import ProtectedRoute from "protectedRoute/ProtectedRoute";
 
 function App() {
   return (
     <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </>
   );
 }
@@ -48,7 +66,47 @@ export default App;
 
 
 
-redux/Reducer.tsx
+Action.ts
+import axios from "axios";
+import { Dispatch } from "redux";
+import { AuthActionTypes } from "./types/authTypes";
+
+interface LoginRequestPayload {
+  email: string;
+  password: string;
+}
+
+export const login =
+  (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API}/api/login`,
+        payload
+      );
+      const { token } = response.data.result;
+      localStorage.setItem("auth", token);
+      dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
+      return response;
+    } catch (error: any) {
+      console.log(error);
+      dispatch({
+        type: AuthActionTypes.LOGIN_FAILURE,
+        payload: error.response.data.message,
+      });
+      throw error;
+    }
+  };
+
+export const logout = () => (dispatch: Dispatch) => {
+  localStorage.removeItem("auth");
+  dispatch({ type: AuthActionTypes.LOGOUT });
+};
+
+
+
+
+
+Reducer.ts
 import { AuthActionTypes } from "./types/authTypes";
 import { combineReducers } from "redux";
 
@@ -98,7 +156,7 @@ export default rootReducer;
 
 
 
-redux/Store.tsx
+Store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import thunk from "redux-thunk";
 import rootReducer from "./Reducer";
@@ -111,47 +169,7 @@ export default store;
 
 
 
-redux/Action.ts
-import axios from "axios";
-import { Dispatch } from "redux";
-import { AuthActionTypes } from "./types/authTypes";
-
-interface LoginRequestPayload {
-  email: string;
-  password: string;
-}
-
-export const login =
-  (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/login`,
-        payload
-      );
-      const { token } = response.data.result;
-      localStorage.setItem("auth", token);
-      dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
-      return response;
-    } catch (error: any) {
-      console.log(error);
-      dispatch({
-        type: AuthActionTypes.LOGIN_FAILURE,
-        payload: error.response.data.message,
-      });
-      throw error;
-    }
-  };
-
-export const logout = () => (dispatch: Dispatch) => {
-  localStorage.removeItem("auth");
-  dispatch({ type: AuthActionTypes.LOGOUT });
-};
-
-
-
-
-
-redux/types/authType.ts
+Type.ts
 export const AuthActionTypes = {
   LOGIN_SUCCESS: "LOGIN_SUCCESS",
   LOGIN_FAILURE: "LOGIN_FAILURE",
@@ -162,7 +180,36 @@ export const AuthActionTypes = {
 
 
 
-pages/Login/LoginPage.tsx
+ProtectedRoute.tsx
+import React from "react";
+import useAuth from "../context/authContext";
+import { Navigate, useLocation } from "react-router-dom";
+
+const ProtectedRoute = ({ children }: any) => {
+  const { authed }: any = useAuth();
+  const { location }: any = useLocation();
+  const checkToken = localStorage.getItem("auth");
+
+  return (
+    <>
+      {authed === true ? (
+        children
+      ) : checkToken ? (
+        children
+      ) : (
+        <Navigate to={"/login"} replace state={location?.pathname} />
+      )}
+    </>
+  );
+};
+
+export default ProtectedRoute;
+
+
+
+
+
+Login.tsx
 import React, { useEffect, useState } from "react";
 import {
   TextField,
@@ -177,6 +224,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../../context/authContext";
 
 const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
@@ -187,6 +235,7 @@ const LoginPage = (): JSX.Element => {
   const handleMouseDownPassword = (event: any) => event.preventDefault();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loginHandle }: any = useAuth();
 
   const showErrorWithTimeout = (errorMessage: string, timeout: number) => {
     setError(errorMessage);
@@ -201,15 +250,15 @@ const LoginPage = (): JSX.Element => {
   const handleLogin = async (e: any) => {
     e.preventDefault();
     if (!email && !password) {
-      showErrorWithTimeout("Please Enter both Email and Password", 3000);
+      showErrorWithTimeout("Please Enter both Email and Password", 4000);
       return;
     }
     if (!email) {
-      showErrorWithTimeout("Please Enter a Valid Email", 3000);
+      showErrorWithTimeout("Please Enter a Valid Email", 4000);
       return;
     }
     if (!password) {
-      showErrorWithTimeout("Please Enter a Valid Password", 3000);
+      showErrorWithTimeout("Please Enter a Valid Password", 4000);
       return;
     }
     try {
@@ -217,13 +266,14 @@ const LoginPage = (): JSX.Element => {
         login({ email: email, password: password })
       );
       if (!!response && response.data.success === true) {
+        loginHandle();
         navigate("/");
       }
       setEmail("");
       setPassword("");
     } catch (error: any) {
       console.log(error);
-      showErrorWithTimeout(error.response.data.message, 3000);
+      showErrorWithTimeout(error.response.data.message, 4000);
     }
   };
 
@@ -232,8 +282,9 @@ const LoginPage = (): JSX.Element => {
       <Container component="main" maxWidth="xs">
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: 15,
             display: "flex",
+            justifyContent: "center",
             flexDirection: "column",
             alignItems: "center",
           }}
@@ -241,7 +292,11 @@ const LoginPage = (): JSX.Element => {
           <Typography variant="h4" component="h1">
             Login
           </Typography>
-          {error && <Typography color="error">{error}</Typography>}
+          {error && (
+            <Typography color="error" fontWeight={700}>
+              {error}
+            </Typography>
+          )}
           <form onSubmit={handleLogin}>
             <TextField
               margin="normal"
@@ -301,14 +356,69 @@ export default LoginPage;
 
 
 
-pages/Dashboard/DashboardPage.tsx
+Dashboard.tsx
+import { Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 
 const Dashboard = (): JSX.Element => {
+  console.log(localStorage.getItem("auth"));
   return (
-    <div>
-      <h1>Dashboard</h1>
-    </div>
+    <>
+      <Typography variant="h3" padding={2}>
+        Dashboard
+      </Typography>
+      <Grid padding={2}>
+        <Grid item container paddingBottom={3}>
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
+            <Card>
+              <CardContent>
+                <Typography>Card 1</Typography>
+                <Typography>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
+                  eligendi.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
+            <Card>
+              <CardContent>
+                <Typography>Card 2</Typography>
+                <Typography>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
+                  eligendi.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
+            <Card>
+              <CardContent>
+                <Typography>Card 3</Typography>
+                <Typography>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
+                  eligendi.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
+            <Card>
+              <CardContent>
+                <Typography>Card 3</Typography>
+                <Typography>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
+                  eligendi.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
 };
 
@@ -318,7 +428,92 @@ export default Dashboard;
 
 
 
-components/Navbar/Navbar.tsx
+Context.tsx
+import React, { ReactNode, createContext, useContext, useState } from "react";
+
+interface AuthContextType {
+  authed: boolean;
+  loginHandle: () => Promise<void>;
+  logoutHandle: () => Promise<void>;
+}
+
+const authContext = createContext<AuthContextType | null>(null);
+
+function useAuth(): AuthContextType {
+  const [authed, setAuthed] = useState(false);
+
+  const loginHandle = () => {
+    return new Promise<void>(() => {
+      setAuthed(true);
+    });
+  };
+
+  const logoutHandle = () => {
+    return new Promise<void>(() => {
+      setAuthed(false);
+    });
+  };
+
+  return {
+    authed,
+    loginHandle,
+    logoutHandle,
+  };
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const auth = useAuth();
+  return <authContext.Provider value={auth}>{children}</authContext.Provider>;
+}
+
+export function AuthConsumer() {
+  return useContext(authContext);
+}
+
+export default AuthConsumer;
+
+
+
+
+
+Layout.tsx
+import { Grid } from "@mui/material";
+import React, { useState } from "react";
+import "../Layout/Layout.css";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
+import Navbar from "../Navbar/Navbar";
+
+const Layout = (): JSX.Element => {
+  const [isOpen, setIsClose] = useState<boolean>(true);
+
+  const toggleSidebar = () => {
+    setIsClose((toogle) => !toogle);
+  };
+  return (
+    <div>
+      <Grid className="layout">
+        <Grid className={isOpen ? "layout-sidebar" : "layout-sidebar-sm"}>
+          <Sidebar />
+        </Grid>
+        <Grid className="layout-navbar">
+          <Navbar toogleSidebar={toggleSidebar} />
+        </Grid>
+        <Grid className="outlet">
+          <Outlet />
+        </Grid>
+      </Grid>
+    </div>
+  );
+};
+
+export default Layout;
+
+
+
+
+
+Navbar.tsx
 import React, { useState } from "react";
 import { AppBar, Grid, Toolbar, Typography } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -350,7 +545,7 @@ export default Navbar;
 
 
 
-components/Sidebar/Sidebar.tsx
+Sidebar.tsx
 import React from "react";
 import {
   Divider,
@@ -360,19 +555,25 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
+  Tooltip,
+  Zoom,
 } from "@mui/material";
 import { Dashboard, Logout } from "@mui/icons-material";
 import "../Sidebar/Sidebar.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "redux/Action";
+import useAuth from "../../context/authContext";
 
 const Sidebar = (): JSX.Element => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { logoutHandle }: any = useAuth();
+
   const Out = () => {
-    navigate("/login");
     dispatch<any>(logout());
+    logoutHandle();
+    navigate("/login");
   };
   return (
     <>
@@ -380,26 +581,48 @@ const Sidebar = (): JSX.Element => {
         <Grid item lg={12} sm={6} xs={3}>
           <Toolbar />
           <Divider />
+
           <ListItem disablePadding className="sidebar-item">
-            <ListItemButton className="sidebar-listitem-active-btn">
-              <ListItemIcon className="sidebar-icon">
-                <Dashboard />
-              </ListItemIcon>
-              <ListItemText primary="Dashboard" sx={{ whiteSpace: "nowrap" }} />
-            </ListItemButton>
+            <Tooltip
+              title={"Dashboard"}
+              arrow
+              TransitionComponent={Zoom}
+              enterDelay={800}
+              leaveDelay={200}
+              placement="bottom"
+            >
+              <ListItemButton className="sidebar-listitem-active-btn">
+                <ListItemIcon className="sidebar-icon">
+                  <Dashboard />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Dashboard"
+                  sx={{ whiteSpace: "nowrap" }}
+                />
+              </ListItemButton>
+            </Tooltip>
           </ListItem>
           <Divider />
 
           <ListItem disablePadding className="sidebar-item logout">
-            <ListItemButton
-              className="sidebar-listitem-active-btn"
-              onClick={Out}
+            <Tooltip
+              title={"Logout"}
+              arrow
+              TransitionComponent={Zoom}
+              enterDelay={800}
+              leaveDelay={200}
+              placement="bottom"
             >
-              <ListItemIcon className="sidebar-icon">
-                <Logout />
-              </ListItemIcon>
-              <ListItemText primary="Logout" sx={{ whiteSpace: "nowrap" }} />
-            </ListItemButton>
+              <ListItemButton
+                className="sidebar-listitem-active-btn"
+                onClick={Out}
+              >
+                <ListItemIcon className="sidebar-icon">
+                  <Logout />
+                </ListItemIcon>
+                <ListItemText primary="Logout" sx={{ whiteSpace: "nowrap" }} />
+              </ListItemButton>
+            </Tooltip>
           </ListItem>
           <Divider />
         </Grid>
@@ -409,266 +632,3 @@ const Sidebar = (): JSX.Element => {
 };
 
 export default Sidebar;
-
-
-
-
-
-components/Layout/Layout.tsx
-import { Grid } from "@mui/material";
-import React, { useState } from "react";
-import "../Layout/Layout.css";
-import { Outlet } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
-import Navbar from "../Navbar/Navbar";
-
-const Layout = (): JSX.Element => {
-  const [isOpen, setIsClose] = useState<boolean>(true);
-
-  const toogleSidebar = (data: boolean | ((prevState: boolean) => boolean)) => {
-    setIsClose(data);
-  };
-  return (
-    <div>
-      <Grid className="layout">
-        <Grid className={isOpen ? "layout-sidebar" : "layout-sidebar-sm"}>
-          <Sidebar />
-        </Grid>
-        <Grid className="layout-navbar">
-          <Navbar toogleSidebar={toogleSidebar} />
-        </Grid>
-        <Grid className="outlet">
-          <Outlet />
-        </Grid>
-      </Grid>
-    </div>
-  );
-};
-
-export default Layout;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { createContext, useContext, useState } from "react";
-
-interface AuthContextType {
-  isLoggedIn: boolean;
-  login: (token: string) => void;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  isLoggedIn: false,
-  login: () => {},
-  logout: () => {},
-});
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  const login = (token: string) => {
-    localStorage.setItem("auth", token);
-    setIsLoggedIn(true);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("auth");
-    setIsLoggedIn(false);
-  };
-
-  return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-
-
-
-
-
-
-
-import React from "react";
-import ReactDOM from "react-dom";
-import App from "./App";
-import { Provider } from "react-redux";
-import store from "redux/Store";
-import { AuthProvider } from "./AuthContext"; // Import the AuthProvider
-
-const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
-);
-
-root.render(
-  <Provider store={store}>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </Provider>
-);
-
-
-
-
-
-
-
-
-
-import React, { useEffect } from "react";
-// ... other imports and code ...
-import { useAuth } from "./AuthContext"; // Import the useAuth hook
-import { useDispatch } from "react-redux";
-import { checkAuthStatus } from "redux/Action";
-
-function App() {
-  const { isLoggedIn } = useAuth(); // Use the useAuth hook here
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(checkAuthStatus());
-  }, [dispatch]);
-
-  return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          {isLoggedIn ? (
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Route>
-          ) : (
-            <Route index element={<Navigate to="/login" replace />} />
-          )}
-        </Routes>
-      </BrowserRouter>
-    </>
-  );
-}
-
-export default App;
