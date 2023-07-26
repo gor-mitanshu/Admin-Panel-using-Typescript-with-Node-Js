@@ -1,57 +1,42 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import { useDispatch } from "react-redux";
-import { login, logout } from "redux/Action";
+import React, { ReactNode, createContext, useContext, useState } from "react";
 
-interface AuthContextTypes {
-  loggedIn: boolean;
-  isAdmin: boolean;
-  loginhandle: (email: string, password: string) => Promise<void>;
-  handleLogout: () => void;
+interface AuthContextType {
+  authed: boolean;
+  loginHandle: () => Promise<void>;
+  logoutHandle: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextTypes | null>(null);
+const authContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: any) => {
-  const [loggedIn, setIsLoggedIn] = useState<boolean>(
-    () => !!localStorage.getItem("auth")
-  );
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const dispatch = useDispatch();
+function useAuth(): AuthContextType {
+  const [authed, setAuthed] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("auth");
-    if (!!token) {
-      setIsLoggedIn(true);
-      setIsAdmin(true);
-    }
-  }, []);
-
-  const loginhandle = async (email: string, password: string) => {
-    try {
-      const response = await dispatch<any>(login({ email, password }));
-      if (!!response && response.data.success === true) {
-        setIsAdmin(true);
-        setIsLoggedIn(true);
-      }
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+  const loginHandle = () => {
+    return new Promise<void>(() => {
+      setAuthed(true);
+    });
   };
 
-  const handleLogout = () => {
-    dispatch<any>(logout());
-    setIsLoggedIn(false);
-    setIsAdmin(false);
+  const logoutHandle = () => {
+    return new Promise<void>(() => {
+      setAuthed(false);
+    });
   };
 
-  return (
-    <AuthContext.Provider
-      value={{ loggedIn, isAdmin, loginhandle, handleLogout }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  return {
+    authed,
+    loginHandle,
+    logoutHandle,
+  };
+}
 
-export const useAuth = () => useContext(AuthContext);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const auth = useAuth();
+  return <authContext.Provider value={auth}>{children}</authContext.Provider>;
+}
+
+export function AuthConsumer() {
+  return useContext(authContext);
+}
+
+export default AuthConsumer;

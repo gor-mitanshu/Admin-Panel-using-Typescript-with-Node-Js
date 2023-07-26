@@ -12,6 +12,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../../context/authContext";
 
 const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
@@ -22,6 +23,7 @@ const LoginPage = (): JSX.Element => {
   const handleMouseDownPassword = (event: any) => event.preventDefault();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loginHandle }: any = useAuth();
 
   const showErrorWithTimeout = (errorMessage: string, timeout: number) => {
     setError(errorMessage);
@@ -47,12 +49,12 @@ const LoginPage = (): JSX.Element => {
       showErrorWithTimeout("Please Enter a Valid Password", 4000);
       return;
     }
-    console.log(localStorage.getItem("auth"));
     try {
       const response = await dispatch<any>(
         login({ email: email, password: password })
       );
       if (!!response && response.data.success === true) {
+        loginHandle();
         navigate("/");
       }
       setEmail("");

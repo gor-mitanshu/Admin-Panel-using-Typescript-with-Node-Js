@@ -5,6 +5,7 @@ import LoginPage from "pages/Login/LoginPage";
 import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/Dashboard";
 import { AuthProvider } from "context/authContext";
+import ProtectedRoute from "protectedRoute/ProtectedRoute";
 
 function App() {
   return (
@@ -13,9 +14,23 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<Layout />}>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>

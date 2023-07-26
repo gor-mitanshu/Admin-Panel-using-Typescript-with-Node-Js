@@ -15,13 +15,17 @@ import "../Sidebar/Sidebar.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "redux/Action";
+import useAuth from "../../context/authContext";
 
 const Sidebar = (): JSX.Element => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { logoutHandle }: any = useAuth();
+
   const Out = () => {
-    navigate("/login");
     dispatch<any>(logout());
+    logoutHandle();
+    navigate("/login");
   };
   return (
     <>
