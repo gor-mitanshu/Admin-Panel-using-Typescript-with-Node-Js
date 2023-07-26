@@ -47,6 +47,7 @@ const LoginPage = (): JSX.Element => {
       showErrorWithTimeout("Please Enter a Valid Password", 4000);
       return;
     }
+    console.log(localStorage.getItem("auth"));
     try {
       const response = await dispatch<any>(
         login({ email: email, password: password })

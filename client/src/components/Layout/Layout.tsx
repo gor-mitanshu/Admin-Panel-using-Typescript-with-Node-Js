@@ -8,8 +8,8 @@ import Navbar from "../Navbar/Navbar";
 const Layout = (): JSX.Element => {
   const [isOpen, setIsClose] = useState<boolean>(true);
 
-  const toogleSidebar = (data: boolean | ((prevState: boolean) => boolean)) => {
-    setIsClose(data);
+  const toggleSidebar = () => {
+    setIsClose((toogle) => !toogle);
   };
   return (
     <div>
@@ -18,7 +18,7 @@ const Layout = (): JSX.Element => {
           <Sidebar />
         </Grid>
         <Grid className="layout-navbar">
-          <Navbar toogleSidebar={toogleSidebar} />
+          <Navbar toogleSidebar={toggleSidebar} />
         </Grid>
         <Grid className="outlet">
           <Outlet />

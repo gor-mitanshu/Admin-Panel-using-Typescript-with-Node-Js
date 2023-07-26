@@ -9,7 +9,7 @@ const Dashboard = (): JSX.Element => {
       </Typography>
       <Grid padding={2}>
         <Grid item container paddingBottom={3}>
-          <Grid lg={3} sx={{ border: "1px solid black" }}>
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
             <Card>
               <CardContent>
                 <Typography>Card 1</Typography>
@@ -21,7 +21,7 @@ const Dashboard = (): JSX.Element => {
             </Card>
           </Grid>
 
-          <Grid lg={3} sx={{ border: "1px solid black" }}>
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
             <Card>
               <CardContent>
                 <Typography>Card 2</Typography>
@@ -33,7 +33,7 @@ const Dashboard = (): JSX.Element => {
             </Card>
           </Grid>
 
-          <Grid lg={3} sx={{ border: "1px solid black" }}>
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
             <Card>
               <CardContent>
                 <Typography>Card 3</Typography>
@@ -45,7 +45,7 @@ const Dashboard = (): JSX.Element => {
             </Card>
           </Grid>
 
-          <Grid lg={3} sx={{ border: "1px solid black" }}>
+          <Grid item lg={3} sx={{ border: "1px solid black" }}>
             <Card>
               <CardContent>
                 <Typography>Card 3</Typography>
