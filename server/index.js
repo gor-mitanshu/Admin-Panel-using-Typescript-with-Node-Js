@@ -65,7 +65,7 @@ app.post('/api/login', async (req, res) => {
           if (!!user) {
                const hashedPassword = await bcrypt.compare(req.body.password, user.password);
                if (!!hashedPassword) {
-                    const expiresIn = 10;
+                    const expiresIn = 20;
                     const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn });
                     return res.status(200).send({
                          success: true,
