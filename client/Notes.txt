@@ -115,10 +115,12 @@ import { combineReducers } from "redux";
 interface AuthState {
   token: string | null;
   error: string | null;
+  expiresAt?: Date | null;
 }
 
 const initialLoginState = {
-  token: localStorage.getItem("auth"),
+  // token: localStorage.getItem("auth"),
+  token: null,
   error: null,
 };
 const LoginAuthReducer = (
@@ -131,18 +133,26 @@ const LoginAuthReducer = (
         ...state,
         token: action.payload,
         error: null,
+        expiresAt: new Date(Date.now() + 30000),
       };
     case AuthActionTypes.LOGIN_FAILURE:
       return {
         ...state,
         token: null,
         error: action.payload,
+        expiresAt: null,
       };
     case AuthActionTypes.LOGOUT:
       return {
         ...state,
         token: null,
         error: null,
+        expiresAt: null,
+      };
+    case AuthActionTypes.EXPIRE_TOKEN:
+      return {
+        ...state,
+        expiresAt: new Date(action.payload),
       };
     default:
       return state;
@@ -169,6 +179,7 @@ const persistConfig = {
   key: "auth",
   storage,
   whitelist: ["LoginAuthReducer"],
+  blacklist: ["expiresAt"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -189,6 +200,7 @@ export const enum AuthActionTypes {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   LOGIN_FAILURE = "LOGIN_FAILURE",
   LOGOUT = "LOGOUT",
+  EXPIRE_TOKEN = "EXPIRE_TOKEN",
 }
 
 
@@ -240,6 +252,7 @@ import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../context/authContext";
+import { AuthActionTypes } from "redux/types/authTypes";
 
 const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
@@ -282,6 +295,10 @@ const LoginPage = (): JSX.Element => {
       );
       if (!!response && response.data.success === true) {
         loginHandle();
+        dispatch({
+          type: AuthActionTypes.EXPIRE_TOKEN,
+          payload: response.data.result.expirationTime,
+        });
         navigate("/");
       }
       setEmail("");
@@ -647,3 +664,151 @@ const Sidebar = (): JSX.Element => {
 };
 
 export default Sidebar;
+
+
+
+
+
+Backend
+index.js
+const express = require('express');
+const app = express();
+require('dotenv').config();
+const cors = require("cors");
+app.use(cors());
+const mongoose = require('mongoose');
+const User = require('./models/UserSchema');
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+const colors = require("colors");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+mongoose.connect(process.env.MONGO_URL).then(e => {
+     console.log(`Connection established with Database`.bgGreen.white)
+});
+const PORT = process.env.PORT || 9936;
+app.listen(PORT, () => {
+     console.log(`connection successfull with ${PORT}`.bgWhite.white)
+});
+app.get('/', (req, res) => {
+     res.send(`hello API`)
+});
+
+
+// Admin Register
+const express = require('express');
+const app = express();
+require('dotenv').config();
+const cors = require("cors");
+app.use(cors());
+const mongoose = require('mongoose');
+const User = require('./models/UserSchema');
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+const colors = require("colors");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+mongoose.connect(process.env.MONGO_URL).then(e => {
+     console.log(`Connection established with Database`.bgGreen.white)
+});
+const PORT = process.env.PORT || 9936;
+app.listen(PORT, () => {
+     console.log(`connection successfull with ${PORT}`.bgWhite.white)
+});
+app.get('/', (req, res) => {
+     res.send(`hello API`)
+});
+
+
+// Admin Register
+app.post('/api/adminregister', async (req, res) => {
+     try {
+          let existingadmin = await User.findOne({ email: req.body.email });
+          if (!!existingadmin) {
+               return res.status(409).send({
+                    success: false,
+                    message: "Admin Already Registered!"
+               })
+          } else {
+               const user = new User({
+                    firstname: req.body.firstname,
+                    lastname: req.body.lastname,
+                    email: req.body.email,
+                    phone: req.body.phone,
+                    password: await bcrypt.hash(req.body.password, 10),
+                    role: "admin",
+               })
+               await user.save();
+               return res.status(200).send({
+                    success: true,
+                    message: "Successfully Registered",
+                    user: user
+               })
+          }
+     } catch (error) {
+          console.log(error);
+          res.status(404).send({
+               success: false,
+               message: "Something went wrong",
+               error
+          });
+     }
+});
+
+app.post('/api/login', async (req, res) => {
+     try {
+          const user = await User.findOne({ email: req.body.email });
+          if (!!user) {
+               const hashedPassword = await bcrypt.compare(req.body.password, user.password);
+               if (!!hashedPassword) {
+                    const token = jwt.sign({ user }, "auth", { expiresIn: '30s' });
+                    const expirationTime = new Date(Date.now() + 30000);
+                    return res.status(200).send({
+                         success: true,
+                         message: "Login Successful",
+                         result: { token, expirationTime }
+                    })
+               } else {
+                    return res.status(401).send({
+                         success: false,
+                         message: "Invalid Password",
+
+                    })
+               }
+          } else {
+               return res.status(400).send({
+                    success: false,
+                    message: "User Not Found",
+
+               })
+          }
+     } catch (error) {
+          console.log(error);
+          res.status(404).send({
+               success: false,
+               message: "Something went wrong",
+               error
+          });
+     }
+});
+
+
+
+
+
+models/UserSchema.js
+const mongoose = require('mongoose')
+const User = new mongoose.Schema({
+     firstname: { type: String, required: true },
+     lastname: { type: String, required: true },
+     phone: { type: Number, required: true },
+     email: { type: String, required: true, unique: true },
+     password: { type: String, required: true },
+     role: { type: String }
+}, { timestamps: true })
+const model = new mongoose.model("Panel-Project", User)
+module.exports = model
