@@ -34,7 +34,7 @@ app.post('/api/adminregister', async (req, res) => {
                     message: "Admin Already Registered!"
                })
           } else {
-               const admin = new User({
+               const user = new User({
                     firstname: req.body.firstname,
                     lastname: req.body.lastname,
                     email: req.body.email,
@@ -42,11 +42,11 @@ app.post('/api/adminregister', async (req, res) => {
                     password: await bcrypt.hash(req.body.password, 10),
                     role: "admin",
                })
-               await admin.save();
+               await user.save();
                return res.status(200).send({
                     success: true,
                     message: "Successfully Registered",
-                    admin: admin
+                    user: user
                })
           }
      } catch (error) {

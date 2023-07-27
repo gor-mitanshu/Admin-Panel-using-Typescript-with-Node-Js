@@ -1,8 +1,13 @@
 import { Card, CardContent, Grid, Typography } from "@mui/material";
+import jwtDecode from "jwt-decode";
 import React from "react";
+import { useSelector } from "react-redux";
 
 const Dashboard = (): JSX.Element => {
   // console.log(localStorage.getItem("auth"));
+  const token = useSelector((state: any) => state.LoginAuthReducer.token);
+  const decodeToken = jwtDecode(token);
+  console.log(decodeToken);
   return (
     <>
       <Typography variant="h3" padding={2}>
