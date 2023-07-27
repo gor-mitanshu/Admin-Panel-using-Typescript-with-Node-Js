@@ -14,15 +14,16 @@ interface NavbarProps {
   };
 }
 const Navbar = ({ toogleSidebar }: any): JSX.Element => {
+  const token = useSelector((state: any) => state.LoginAuthReducer.token);
+  const decodeToken: NavbarProps = jwtDecode(token);
+  const name = decodeToken.user.firstname + " " + decodeToken.user.lastname;
+  const role = decodeToken.user.role;
+
   const [isOpen, setOpen] = useState<boolean>(false);
   const toogleSiderbar = () => {
     setOpen(!isOpen);
     toogleSidebar(isOpen);
   };
-  const token = useSelector((state: any) => state.LoginAuthReducer.token);
-  const decodeToken: NavbarProps = jwtDecode(token);
-  const name = decodeToken.user.firstname + " " + decodeToken.user.lastname;
-  const role = decodeToken.user.role;
   return (
     <div>
       <Grid className="navbar">

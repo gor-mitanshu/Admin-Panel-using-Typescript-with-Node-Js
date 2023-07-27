@@ -1,3 +1,5 @@
+Frontend
+index.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
@@ -68,6 +70,93 @@ export default App;
 
 
 
+authTypes.ts
+export const enum AuthActionTypes {
+  LOGIN_SUCCESS = "LOGIN_SUCCESS",
+  LOGIN_FAILURE = "LOGIN_FAILURE",
+  LOGOUT = "LOGOUT",
+}
+
+
+
+
+
+Reducer.tsx
+import { AuthActionTypes } from "./types/authTypes";
+import { combineReducers } from "redux";
+
+interface AuthState {
+  token: string | null;
+  error: string | null;
+}
+
+const initialLoginState = {
+  token: localStorage.getItem("auth"),
+  error: null,
+};
+const LoginAuthReducer = (
+  state = initialLoginState,
+  action: any
+): AuthState => {
+  switch (action.type) {
+    case AuthActionTypes.LOGIN_SUCCESS:
+      return {
+        ...state,
+        token: action.payload,
+        error: null,
+      };
+    case AuthActionTypes.LOGIN_FAILURE:
+      return {
+        ...state,
+        token: null,
+        error: action.payload,
+      };
+    case AuthActionTypes.LOGOUT:
+      return {
+        ...state,
+        token: null,
+        error: null,
+      };
+    default:
+      return state;
+  }
+};
+
+const rootReducer = combineReducers({
+  LoginAuthReducer,
+});
+export default rootReducer;
+
+
+
+
+
+Store.ts
+import { configureStore } from "@reduxjs/toolkit";
+import thunk from "redux-thunk";
+import rootReducer from "./Reducer";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+
+const persistConfig = {
+  key: "auth",
+  storage,
+  whitelist: ["LoginAuthReducer"],
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+const store = configureStore({
+  reducer: persistedReducer,
+  middleware: [thunk],
+});
+const persistor = persistStore(store);
+
+export { store, persistor };
+
+
+
+
+
 Action.ts
 import axios from "axios";
 import { Dispatch } from "redux";
@@ -108,114 +197,25 @@ export const logout = () => (dispatch: Dispatch) => {
 
 
 
-Reducer.ts
-import { AuthActionTypes } from "./types/authTypes";
-import { combineReducers } from "redux";
-
-interface AuthState {
-  token: string | null;
-  error: string | null;
-  expiresAt?: Date | null;
-}
-
-const initialLoginState = {
-  // token: localStorage.getItem("auth"),
-  token: null,
-  error: null,
-};
-const LoginAuthReducer = (
-  state = initialLoginState,
-  action: any
-): AuthState => {
-  switch (action.type) {
-    case AuthActionTypes.LOGIN_SUCCESS:
-      return {
-        ...state,
-        token: action.payload,
-        error: null,
-        expiresAt: new Date(Date.now() + 30000),
-      };
-    case AuthActionTypes.LOGIN_FAILURE:
-      return {
-        ...state,
-        token: null,
-        error: action.payload,
-        expiresAt: null,
-      };
-    case AuthActionTypes.LOGOUT:
-      return {
-        ...state,
-        token: null,
-        error: null,
-        expiresAt: null,
-      };
-    case AuthActionTypes.EXPIRE_TOKEN:
-      return {
-        ...state,
-        expiresAt: new Date(action.payload),
-      };
-    default:
-      return state;
-  }
-};
-
-const rootReducer = combineReducers({
-  LoginAuthReducer,
-});
-export default rootReducer;
-
-
-
-
-
-Store.ts
-import { configureStore } from "@reduxjs/toolkit";
-import thunk from "redux-thunk";
-import rootReducer from "./Reducer";
-import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage";
-
-const persistConfig = {
-  key: "auth",
-  storage,
-  whitelist: ["LoginAuthReducer"],
-  blacklist: ["expiresAt"],
-};
-
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-const store = configureStore({
-  reducer: persistedReducer,
-  middleware: [thunk],
-});
-const persistor = persistStore(store);
-
-export { store, persistor };
-
-
-
-
-
-Type.ts
-export const enum AuthActionTypes {
-  LOGIN_SUCCESS = "LOGIN_SUCCESS",
-  LOGIN_FAILURE = "LOGIN_FAILURE",
-  LOGOUT = "LOGOUT",
-  EXPIRE_TOKEN = "EXPIRE_TOKEN",
-}
-
-
-
-
-
 ProtectedRoute.tsx
 import React from "react";
 import useAuth from "../context/authContext";
 import { Navigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children }: any) => {
   const { authed }: any = useAuth();
   const { location }: any = useLocation();
-  const checkToken = localStorage.getItem("auth");
+  // const checkToken = localStorage.getItem("auth");
+  const checkToken = useSelector((state: any) => state.LoginAuthReducer.token);
+  // console.log(
+  //   useSelector((state: any) => state.LoginAuthReducer),
+  //   "LOginAUthReducer"
+  // );
+  // console.log(
+  //   useSelector((state: any) => state.LoginAuthReducer.token),
+  //   "Token"
+  // );
 
   return (
     <>
@@ -252,7 +252,6 @@ import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../context/authContext";
-import { AuthActionTypes } from "redux/types/authTypes";
 
 const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
@@ -295,10 +294,6 @@ const LoginPage = (): JSX.Element => {
       );
       if (!!response && response.data.success === true) {
         loginHandle();
-        dispatch({
-          type: AuthActionTypes.EXPIRE_TOKEN,
-          payload: response.data.result.expirationTime,
-        });
         navigate("/");
       }
       setEmail("");
@@ -460,7 +455,7 @@ export default Dashboard;
 
 
 
-Context.tsx
+authContext.tsx
 import React, { ReactNode, createContext, useContext, useState } from "react";
 
 interface AuthContextType {
@@ -508,75 +503,6 @@ export default AuthConsumer;
 
 
 
-Layout.tsx
-import { Grid } from "@mui/material";
-import React, { useState } from "react";
-import "../Layout/Layout.css";
-import { Outlet } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
-import Navbar from "../Navbar/Navbar";
-
-const Layout = (): JSX.Element => {
-  const [isOpen, setIsClose] = useState<boolean>(true);
-
-  const toggleSidebar = () => {
-    setIsClose((toogle) => !toogle);
-  };
-  return (
-    <div>
-      <Grid className="layout">
-        <Grid className={isOpen ? "layout-sidebar" : "layout-sidebar-sm"}>
-          <Sidebar />
-        </Grid>
-        <Grid className="layout-navbar">
-          <Navbar toogleSidebar={toggleSidebar} />
-        </Grid>
-        <Grid className="outlet">
-          <Outlet />
-        </Grid>
-      </Grid>
-    </div>
-  );
-};
-
-export default Layout;
-
-
-
-
-
-Navbar.tsx
-import React, { useState } from "react";
-import { AppBar, Grid, Toolbar, Typography } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import "../Navbar/Navbar.css";
-
-const Navbar = ({ toogleSidebar }: any): JSX.Element => {
-  const [isOpen, setOpen] = useState<boolean>(false);
-  const toogleSiderbar = () => {
-    setOpen(!isOpen);
-    toogleSidebar(isOpen);
-  };
-  return (
-    <div>
-      <Grid className="navbar">
-        <AppBar>
-          <Toolbar className="toolbar-navbar">
-            <MenuIcon className="menu-icon" onClick={toogleSiderbar} />
-            <Typography className="navbar-title">Admin Panel</Typography>
-          </Toolbar>
-        </AppBar>
-      </Grid>
-    </div>
-  );
-};
-
-export default Navbar;
-
-
-
-
-
 Sidebar.tsx
 import React from "react";
 import {
@@ -602,7 +528,7 @@ const Sidebar = (): JSX.Element => {
   const dispatch = useDispatch();
   const { logoutHandle }: any = useAuth();
 
-  const Out = () => {
+  const handleLogout = () => {
     dispatch<any>(logout());
     logoutHandle();
     navigate("/login");
@@ -647,7 +573,7 @@ const Sidebar = (): JSX.Element => {
             >
               <ListItemButton
                 className="sidebar-listitem-active-btn"
-                onClick={Out}
+                onClick={handleLogout}
               >
                 <ListItemIcon className="sidebar-icon">
                   <Logout />
@@ -664,6 +590,102 @@ const Sidebar = (): JSX.Element => {
 };
 
 export default Sidebar;
+
+
+
+
+
+Navbar.tsx
+import React, { useState } from "react";
+import { AppBar, Grid, Toolbar, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import "../Navbar/Navbar.css";
+import { useSelector } from "react-redux";
+import jwtDecode from "jwt-decode";
+
+interface NavbarProps {
+  decodeToken?: {};
+  user: {
+    firstname: string;
+    lastname: string;
+    role: string;
+  };
+}
+const Navbar = ({ toogleSidebar }: any): JSX.Element => {
+  const [isOpen, setOpen] = useState<boolean>(false);
+  const toogleSiderbar = () => {
+    setOpen(!isOpen);
+    toogleSidebar(isOpen);
+  };
+  const token = useSelector((state: any) => state.LoginAuthReducer.token);
+  const decodeToken: NavbarProps = jwtDecode(token);
+  const name = decodeToken.user.firstname + " " + decodeToken.user.lastname;
+  const role = decodeToken.user.role;
+  return (
+    <div>
+      <Grid className="navbar">
+        <AppBar>
+          <Toolbar className="toolbar-navbar">
+            <MenuIcon className="menu-icon" onClick={toogleSiderbar} />
+            <Grid
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <Typography className="navbar-title">Panel</Typography>
+              <Typography className="navbar-name">
+                <span style={{ color: "#cacaca" }}>{role.toUpperCase()}</span>:{" "}
+                <span style={{ color: "#ff4382" }}>{name.toUpperCase()}</span>
+              </Typography>
+            </Grid>
+          </Toolbar>
+        </AppBar>
+      </Grid>
+    </div>
+  );
+};
+
+export default Navbar;
+
+
+
+
+
+Layout.tsx
+import { Grid } from "@mui/material";
+import React, { useState } from "react";
+import "../Layout/Layout.css";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
+import Navbar from "../Navbar/Navbar";
+
+const Layout = (): JSX.Element => {
+  const [isOpen, setIsClose] = useState<boolean>(true);
+
+  const toggleSidebar = () => {
+    setIsClose((toogle) => !toogle);
+  };
+  return (
+    <div>
+      <Grid className="layout">
+        <Grid className={isOpen ? "layout-sidebar" : "layout-sidebar-sm"}>
+          <Sidebar />
+        </Grid>
+        <Grid className="layout-navbar">
+          <Navbar toogleSidebar={toggleSidebar} />
+        </Grid>
+        <Grid className="outlet">
+          <Outlet />
+        </Grid>
+      </Grid>
+    </div>
+  );
+};
+
+export default Layout;
 
 
 
@@ -810,7 +832,7 @@ app.get('/api/user', async (req, res) => {
 
 
 
-models/UserSchema.js
+UserSchema.js
 const mongoose = require('mongoose')
 const User = new mongoose.Schema({
      firstname: { type: String, required: true },
