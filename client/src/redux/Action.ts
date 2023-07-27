@@ -15,7 +15,7 @@ export const login =
         payload
       );
       const { token } = response.data.result;
-      localStorage.setItem("auth", token);
+      // localStorage.setItem("auth", token);
       dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
       return response;
     } catch (error: any) {
@@ -29,6 +29,6 @@ export const login =
   };
 
 export const logout = () => (dispatch: Dispatch) => {
-  localStorage.removeItem("auth");
+  // localStorage.removeItem("auth");
   dispatch({ type: AuthActionTypes.LOGOUT });
 };

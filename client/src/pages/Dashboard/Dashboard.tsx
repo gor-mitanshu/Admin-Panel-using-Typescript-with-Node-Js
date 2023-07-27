@@ -2,7 +2,7 @@ import { Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 
 const Dashboard = (): JSX.Element => {
-  console.log(localStorage.getItem("auth"));
+  // console.log(localStorage.getItem("auth"));
   return (
     <>
       <Typography variant="h3" padding={2}>
