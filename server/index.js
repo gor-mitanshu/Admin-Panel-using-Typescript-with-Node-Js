@@ -61,11 +61,11 @@ app.post('/api/adminregister', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
      try {
-          const admin = await User.findOne({ email: req.body.email });
-          if (!!admin) {
-               const hashedPassword = await bcrypt.compare(req.body.password, admin.password);
+          const user = await User.findOne({ email: req.body.email });
+          if (!!user) {
+               const hashedPassword = await bcrypt.compare(req.body.password, user.password);
                if (!!hashedPassword) {
-                    const token = jwt.sign({ admin }, "auth",);
+                    const token = jwt.sign({ user }, "auth",);
                     return res.status(200).send({
                          success: true,
                          message: "Login Successful",
