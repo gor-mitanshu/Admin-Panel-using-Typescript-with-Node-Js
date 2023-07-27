@@ -8,7 +8,7 @@
 }
 .toolbar-navbar {
   padding: 0;
-  padding-left: 10px !important;
+  padding-left: 12px !important;
   background: #230e0ec7 !important;
   color: white !important;
 }
@@ -23,11 +23,24 @@
   font-weight: bold !important;
   font-size: 26px !important;
 }
+.navbar-title {
+  margin: 4px !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+}
 @media (max-width: 600px) {
   .menu-icon {
     display: none !important;
   }
   .navbar-title {
     font-size: 22px !important;
+  }
+  .navbar-name {
+    font-size: 15px !important;
+  }
+}
+@media (max-width: 350px) {
+  .navbar-name {
+    display: none !important;
   }
 }
