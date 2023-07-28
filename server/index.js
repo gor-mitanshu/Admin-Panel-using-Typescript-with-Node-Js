@@ -97,44 +97,44 @@ app.post('/api/login', async (req, res) => {
      }
 });
 
-// Get user details
-app.get('/api/user', async (req, res) => {
-     try {
-          const token = req.headers.authorization;
+// // Get user details
+// app.get('/api/user', async (req, res) => {
+//      try {
+//           const token = req.headers.authorization;
 
-          if (!token) {
-               return res.status(401).send({
-                    success: false,
-                    message: "Authorization header missing"
-               });
-          }
+//           if (!token) {
+//                return res.status(401).send({
+//                     success: false,
+//                     message: "Authorization header missing"
+//                });
+//           }
 
-          const tokenWithoutBearer = token.replace('Bearer ', '');
-          const data = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
+//           const tokenWithoutBearer = token.replace('Bearer ', '');
+//           const data = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
 
-          const user = await User.findOne({ _id: data.user._id });
+//           const user = await User.findOne({ _id: data.user._id });
 
-          if (user) {
-               return res.status(200).send({
-                    success: true,
-                    message: "Success",
-                    data: user
-               });
-          } else {
-               return res.status(401).send({
-                    success: false,
-                    message: "Data Not Found"
-               });
-          }
-     } catch (error) {
-          console.log(error);
-          res.status(404).send({
-               success: false,
-               message: "Something went wrong",
-               error
-          });
-     }
-});
+//           if (user) {
+//                return res.status(200).send({
+//                     success: true,
+//                     message: "Success",
+//                     data: user
+//                });
+//           } else {
+//                return res.status(401).send({
+//                     success: false,
+//                     message: "Data Not Found"
+//                });
+//           }
+//      } catch (error) {
+//           console.log(error);
+//           res.status(404).send({
+//                success: false,
+//                message: "Something went wrong",
+//                error
+//           });
+//      }
+// });
 
 // Protected Route 
 const protectedRoute = express.Router();
