@@ -22,6 +22,32 @@ root.render(
 
 
 
+Loader.tsx
+import React from "react";
+import CircularProgress from "@mui/material/CircularProgress";
+import { Box } from "@mui/material";
+
+const Loader = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
+};
+
+export default Loader;
+
+
+
+
+
 App.tsx
 import React, { useEffect } from "react";
 import "./App.css";
@@ -723,6 +749,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const colors = require("colors");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const authMiddleWare = require("./middleware/authMiddleware");
 
 mongoose.connect(process.env.MONGO_URL).then(e => {
      console.log(`Connection established with Database`.bgGreen.white)
@@ -771,13 +798,14 @@ app.post('/api/adminregister', async (req, res) => {
      }
 });
 
+// Login
 app.post('/api/login', async (req, res) => {
      try {
           const user = await User.findOne({ email: req.body.email });
           if (!!user) {
                const hashedPassword = await bcrypt.compare(req.body.password, user.password);
                if (!!hashedPassword) {
-                    const expiresIn = 10;
+                    const expiresIn = 2000;
                     const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn });
                     return res.status(200).send({
                          success: true,
@@ -807,43 +835,81 @@ app.post('/api/login', async (req, res) => {
      }
 });
 
-app.get('/api/user', async (req, res) => {
-     try {
-          const token = req.headers.authorization;
+// // Get user details
+// app.get('/api/user', async (req, res) => {
+//      try {
+//           const token = req.headers.authorization;
 
-          if (!token) {
-               return res.status(401).send({
-                    success: false,
-                    message: "Authorization header missing"
-               });
-          }
+//           if (!token) {
+//                return res.status(401).send({
+//                     success: false,
+//                     message: "Authorization header missing"
+//                });
+//           }
 
-          const tokenWithoutBearer = token.replace('Bearer ', '');
-          const data = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
+//           const tokenWithoutBearer = token.replace('Bearer ', '');
+//           const data = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
 
-          const user = await User.findOne({ _id: data.user._id });
+//           const user = await User.findOne({ _id: data.user._id });
 
-          if (user) {
-               return res.status(200).send({
-                    success: true,
-                    message: "Success",
-                    data: user
-               });
-          } else {
-               return res.status(401).send({
-                    success: false,
-                    message: "Data Not Found"
-               });
-          }
-     } catch (error) {
-          console.log(error);
-          res.status(404).send({
-               success: false,
-               message: "Something went wrong",
-               error
-          });
-     }
+//           if (user) {
+//                return res.status(200).send({
+//                     success: true,
+//                     message: "Success",
+//                     data: user
+//                });
+//           } else {
+//                return res.status(401).send({
+//                     success: false,
+//                     message: "Data Not Found"
+//                });
+//           }
+//      } catch (error) {
+//           console.log(error);
+//           res.status(404).send({
+//                success: false,
+//                message: "Something went wrong",
+//                error
+//           });
+//      }
+// });
+
+// Protected Route 
+const protectedRoute = express.Router();
+
+protectedRoute.get('/api/protectedRoute', authMiddleWare, (req, res) => {
+     const { user } = req;
+     return res.send({ message: "This is a Protected Route from index.js", user: user });
 });
+
+app.use(protectedRoute);
+
+
+
+
+
+authMiddleWare.js
+const jwt = require("jsonwebtoken");
+
+const authMiddleware = (req, res, next) => {
+     const token = req.headers.authorization;
+     if (!token) {
+          return res.status(401).send({ success: false, message: "Authorization Headers Missing" });
+     }
+     const tokenWithoutBearer = token.replace('Bearer ', '');
+     try {
+          const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
+          req.user = decoded.user;
+          next();
+     } catch (error) {
+          if (error.name === 'TokenExpiredError') {
+               return res.status(401).send({ success: false, message: 'Token has Expired' });
+          }
+          return res.status(401).send({ success: false, message: "Invalid Token" });
+     }
+};
+
+module.exports = authMiddleware;
 
 
 

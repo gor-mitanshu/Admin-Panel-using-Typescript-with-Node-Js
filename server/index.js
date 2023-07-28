@@ -24,7 +24,6 @@ app.get('/', (req, res) => {
      res.send(`hello API`)
 });
 
-
 // Admin Register
 app.post('/api/adminregister', async (req, res) => {
      try {
@@ -78,7 +77,6 @@ app.post('/api/login', async (req, res) => {
                     return res.status(401).send({
                          success: false,
                          message: "Invalid Password",
-
                     })
                }
           } else {
@@ -137,11 +135,12 @@ app.post('/api/login', async (req, res) => {
 // });
 
 // Protected Route 
+
 const protectedRoute = express.Router();
 
 protectedRoute.get('/api/protectedRoute', authMiddleWare, (req, res) => {
      const { user } = req;
-     return res.send({ message: "This is a Protected Route from index.js", user: user });
+     return res.send({ success: true, message: "This is a Protected Route", user: user });
 });
 
 app.use(protectedRoute);

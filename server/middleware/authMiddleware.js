@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = (req, res, next) => {
      const token = req.headers.authorization;
      if (!token) {
-          return res.status(401).send({ message: "Authorization Headers Missing" });
+          return res.status(401).send({ success: false, message: "Authorization Headers Missing" });
      }
      const tokenWithoutBearer = token.replace('Bearer ', '');
      try {
@@ -12,9 +12,9 @@ const authMiddleware = (req, res, next) => {
           next();
      } catch (error) {
           if (error.name === 'TokenExpiredError') {
-               return res.status(401).send({ message: 'Token has Expired' });
+               return res.status(401).send({ success: false, message: 'Token has Expired' });
           }
-          return res.status(401).send({ message: "Invalid Token" });
+          return res.status(401).send({ success: false, message: "Invalid Token" });
      }
 };
 
