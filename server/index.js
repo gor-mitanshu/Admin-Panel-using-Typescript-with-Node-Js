@@ -11,6 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const colors = require("colors");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const authMiddleWare = require("./middleware/authMiddleware");
 
 mongoose.connect(process.env.MONGO_URL).then(e => {
      console.log(`Connection established with Database`.bgGreen.white)
@@ -59,13 +60,14 @@ app.post('/api/adminregister', async (req, res) => {
      }
 });
 
+// Login
 app.post('/api/login', async (req, res) => {
      try {
           const user = await User.findOne({ email: req.body.email });
           if (!!user) {
                const hashedPassword = await bcrypt.compare(req.body.password, user.password);
                if (!!hashedPassword) {
-                    const expiresIn = 20;
+                    const expiresIn = 2000;
                     const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn });
                     return res.status(200).send({
                          success: true,
@@ -95,6 +97,7 @@ app.post('/api/login', async (req, res) => {
      }
 });
 
+// Get user details
 app.get('/api/user', async (req, res) => {
      try {
           const token = req.headers.authorization;
@@ -132,3 +135,13 @@ app.get('/api/user', async (req, res) => {
           });
      }
 });
+
+// Protected Route 
+const protectedRoute = express.Router();
+
+protectedRoute.get('/api/protectedRoute', authMiddleWare, (req, res) => {
+     const { user } = req;
+     return res.send({ message: "This is a Protected Route from index.js", user: user });
+});
+
+app.use(protectedRoute);
