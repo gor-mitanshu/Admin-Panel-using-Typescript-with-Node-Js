@@ -6,13 +6,15 @@ const authMiddleWare = (req, res, next) => {
           return res.status(401).send({ message: "Authoriuzation Headers Missing" });
      }
      const tokenwithoutBearer = token.replace('Bearer ', '');
-     jwt.verify(tokenwithoutBearer, process.env.JWT_SECRET, (err, decoded) => {
-          if (err) {
-               return res.status(401).send({ message: 'Invalid or Expired Token' });
-          }
-          req.user = decoded.user;
+     try {
+          const decoded = jwt.verify(tokenwithoutBearer, process.env.JWT_SECRET);
+          res.user = decoded.user;
           next();
-     })
+     } catch (error) {
+          if (error.name === 'TokenExpiredError') {
+               return res.status(401).send({ message: 'Token has Expired' });
+          }
+          return res.status(498).send({ message: "Invalid Token" })
+     }
 };
-
 module.exports = authMiddleWare;
