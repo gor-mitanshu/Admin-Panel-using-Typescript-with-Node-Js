@@ -1,12 +1,6 @@
 import React, { useEffect } from "react";
 import "./App.css";
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "pages/Login/LoginPage";
 import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/Dashboard";
@@ -20,7 +14,6 @@ import { persistor } from "redux/Store";
 
 function App() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const token = useSelector((state: any) => state.LoginAuthReducer.token);
 
   useEffect(() => {
@@ -30,8 +23,7 @@ function App() {
         const currentTime = Date.now() / 1000;
         if (decodeToken.exp < currentTime) {
           dispatch<any>(logout());
-          persistor.purge();
-          navigate("/login");
+          persistor.purge(); // Clear the Redux-persist store
         }
       }
     };
@@ -41,7 +33,7 @@ function App() {
     return () => {
       clearInterval(tokenCheckInterval);
     };
-  }, [token, dispatch, navigate]);
+  }, [token, dispatch]);
 
   return (
     <>
