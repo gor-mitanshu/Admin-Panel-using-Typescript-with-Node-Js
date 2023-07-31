@@ -12,7 +12,8 @@ const Dashboard = (): JSX.Element => {
                 "url(https://img.freepik.com/premium-vector/abstract-bubbles-black-background_336924-3490.jpg)",
               color: "#fff",
               position: "relative",
-              cursor: "pointer",  
+              cursor: "pointer",
+              // background: "black",
             }}
           >
             <Box
@@ -66,6 +67,7 @@ const Dashboard = (): JSX.Element => {
                 right: 0,
                 bottom: 0,
                 backgroundColor: "rgba(0, 0, 0, 0.2)",
+                // background: "#f8c12b",
               }}
             />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -108,6 +110,7 @@ const Dashboard = (): JSX.Element => {
                 right: 0,
                 bottom: 0,
                 backgroundColor: "rgba(0, 0, 0, 0.2)",
+                // background: "#29a744",
               }}
             />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -139,6 +142,7 @@ const Dashboard = (): JSX.Element => {
               color: "#fff",
               position: "relative",
               cursor: "pointer",
+              // background: "#dc3546",
             }}
           >
             <Box
