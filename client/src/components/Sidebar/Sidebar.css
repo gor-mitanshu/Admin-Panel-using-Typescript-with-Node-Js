@@ -1,6 +1,8 @@
 .sidebar {
   height: 100%;
-  background: #fff !important;
+  /* background: #fff !important; */
+  background-image: url(https://img.freepik.com/premium-vector/white-abstract-background-with-white-color-bubble-pattern-suitable-website-design-banner_626143-326.jpg);
+  color: black !important;
   position: relative !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
@@ -28,6 +30,18 @@
   color: black;
   font-weight: 900;
 }
-.sidebar-listitem-active-btn {
+.sidebar-listitem-btn {
   padding: 12px !important;
+}
+.sidebar-listitem-btn:active {
+  background: #dad9d9 !important;
+  color: black !important;
+  font-weight: 900;
+}
+.link {
+  text-decoration: none !important;
+  color: black;
+}
+.active li {
+  background: #dad9d9 !important;
 }

@@ -2,12 +2,8 @@ import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 
 const Dashboard = (): JSX.Element => {
-  // console.log(localStorage.getItem("auth"));
   return (
     <>
-      {/* <Typography variant="h3" padding={2}>
-        Dashboard
-      </Typography> */}
       <Grid container padding={2} spacing={1}>
         <Grid item lg={3} md={6} sm={12} xs={12}>
           <Card
@@ -16,7 +12,7 @@ const Dashboard = (): JSX.Element => {
                 "url(https://img.freepik.com/premium-vector/abstract-bubbles-black-background_336924-3490.jpg)",
               color: "#fff",
               position: "relative",
-              cursor: "pointer",
+              cursor: "pointer",  
             }}
           >
             <Box

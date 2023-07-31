@@ -6,6 +6,7 @@ import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/Dashboard";
 import { AuthProvider } from "context/authContext";
 import ProtectedRoute from "protectedRoute/ProtectedRoute";
+import Profile from "pages/Profile/Profile";
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />

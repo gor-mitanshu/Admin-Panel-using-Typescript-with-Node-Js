@@ -27,7 +27,7 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
   return (
     <div>
       <Grid className="navbar">
-        <AppBar>
+        <AppBar className="appbar">
           <Toolbar className="toolbar-navbar">
             <MenuIcon className="menu-icon" onClick={toogleSiderbar} />
             <Grid
@@ -40,8 +40,15 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
             >
               <Typography className="navbar-title">Panel</Typography>
               <Typography className="navbar-name">
-                <span style={{ color: "#cacaca" }}>{role.toUpperCase()}</span>:{" "}
-                <span style={{ color: "#ff4382" }}>{name.toUpperCase()}</span>
+                <span
+                  style={{
+                    color: "black",
+                    // color: "#cacaca"
+                  }}
+                >
+                  {role.toUpperCase()}:
+                </span>
+                <span style={{ color: "#ff4382" }}> {name.toUpperCase()}</span>
               </Typography>
             </Grid>
           </Toolbar>

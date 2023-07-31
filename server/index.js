@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const colors = require("colors");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const authMiddleWare = require("./middleware/authMiddleware");
+const authMiddleware = require("./middleware/authMiddleware");
 
 mongoose.connect(process.env.MONGO_URL).then(e => {
      console.log(`Connection established with Database`.bgGreen.white)
@@ -95,9 +95,14 @@ app.post('/api/login', async (req, res) => {
      }
 });
 
+// Logout
+app.post('/api/logout', (req, res) => {
+     res.json({ success: true, message: 'Logout Successful' });
+});
+
 // Protected Route 
 const protectedRoute = express.Router();
-app.use(authMiddleWare);
+app.use(authMiddleware);
 
 // Get User
 protectedRoute.get('/api/getuser', async (req, res) => {

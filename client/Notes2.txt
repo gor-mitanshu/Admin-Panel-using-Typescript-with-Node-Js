@@ -1,4 +1,3 @@
-Frontend
 index.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -17,32 +16,6 @@ root.render(
     </PersistGate>
   </Provider>
 );
-
-
-
-
-
-Loader.tsx
-import React from "react";
-import CircularProgress from "@mui/material/CircularProgress";
-import { Box } from "@mui/material";
-
-const Loader = () => {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      <CircularProgress />
-    </Box>
-  );
-};
-
-export default Loader;
 
 
 
@@ -96,7 +69,7 @@ export default App;
 
 
 
-authTypes.ts
+type.ts
 export const enum AuthActionTypes {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   LOGIN_FAILURE = "LOGIN_FAILURE",
@@ -107,7 +80,7 @@ export const enum AuthActionTypes {
 
 
 
-Reducer.tsx
+Reducer.ts
 import { AuthActionTypes } from "./types/authTypes";
 import { combineReducers } from "redux";
 
@@ -157,6 +130,45 @@ export default rootReducer;
 
 
 
+Action.ts
+import axios from "axios";
+import { Dispatch } from "redux";
+import { AuthActionTypes } from "./types/authTypes";
+
+interface LoginRequestPayload {
+  email: string;
+  password: string;
+}
+
+export const login =
+  (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API}/api/login`,
+        payload
+      );
+      const { token } = response.data.result;
+      dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
+      return response;
+    } catch (error: any) {
+      console.log(error);
+      dispatch({
+        type: AuthActionTypes.LOGIN_FAILURE,
+        payload: error.response.data.message,
+      });
+      throw error;
+    }
+  };
+
+export const logout = () => (dispatch: Dispatch) => {
+  // localStorage.removeItem("auth");
+  dispatch({ type: AuthActionTypes.LOGOUT });
+};
+
+
+
+
+
 Store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import thunk from "redux-thunk";
@@ -183,46 +195,6 @@ export { store, persistor };
 
 
 
-Action.ts
-import axios from "axios";
-import { Dispatch } from "redux";
-import { AuthActionTypes } from "./types/authTypes";
-
-interface LoginRequestPayload {
-  email: string;
-  password: string;
-}
-
-export const login =
-  (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/login`,
-        payload
-      );
-      const { token } = response.data.result;
-      // localStorage.setItem("auth", token);
-      dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
-      return response;
-    } catch (error: any) {
-      console.log(error);
-      dispatch({
-        type: AuthActionTypes.LOGIN_FAILURE,
-        payload: error.response.data.message,
-      });
-      throw error;
-    }
-  };
-
-export const logout = () => (dispatch: Dispatch) => {
-  // localStorage.removeItem("auth");
-  dispatch({ type: AuthActionTypes.LOGOUT });
-};
-
-
-
-
-
 ProtectedRoute.tsx
 import React, { useEffect } from "react";
 import useAuth from "../context/authContext";
@@ -230,44 +202,36 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { logout } from "redux/Action";
-import { persistor } from "redux/Store";
 import { useDispatch } from "react-redux";
 
 const ProtectedRoute = ({ children }: any) => {
   const { authed }: any = useAuth();
   const { location }: any = useLocation();
   // const checkToken = localStorage.getItem("auth");
-  const checkedToken = useSelector(
-    (state: any) => state.LoginAuthReducer.token
-  );
-  const dispatch = useDispatch();
 
+  const dispatch = useDispatch();
+  const accessToken = useSelector((state: any) => state.LoginAuthReducer.token);
   useEffect(() => {
     const checkTokenValidity = async () => {
       try {
         await axios.get(`${process.env.REACT_APP_API}/api/protectedRoute`, {
           headers: {
-            Authorization: `Bearer ${checkedToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
       } catch (error: any) {
         if (error.response && error.response.status === 401) {
           dispatch<any>(logout());
-          persistor.purge();
         }
       }
     };
 
     checkTokenValidity();
-    const tokenCheckInterval = setInterval(checkTokenValidity, 60000);
-    return () => {
-      clearInterval(tokenCheckInterval);
-    };
-  }, [dispatch, checkedToken]);
+  }, [dispatch, accessToken]);
 
   return (
     <>
-      {authed === true || checkedToken ? (
+      {authed === true || accessToken ? (
         children
       ) : (
         <Navigate to={"/login"} replace state={location?.pathname} />
@@ -277,6 +241,197 @@ const ProtectedRoute = ({ children }: any) => {
 };
 
 export default ProtectedRoute;
+
+
+
+
+
+Dashboard.tsx
+import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
+import React from "react";
+
+const Dashboard = (): JSX.Element => {
+  // console.log(localStorage.getItem("auth"));
+  return (
+    <>
+      {/* <Typography variant="h3" padding={2}>
+        Dashboard
+      </Typography> */}
+      <Grid container padding={2} spacing={1}>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card
+            sx={{
+              backgroundImage:
+                "url(https://img.freepik.com/premium-vector/abstract-bubbles-black-background_336924-3490.jpg)",
+              color: "#fff",
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <Box
+              sx={{
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+              }}
+            />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 1
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card
+            sx={{
+              backgroundImage:
+                "url(https://img.freepik.com/premium-photo/bubbles-orange-water-3d-render_85770-45.jpg)",
+              color: "#fff",
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <Box
+              sx={{
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+              }}
+            />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 2
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card
+            sx={{
+              backgroundImage:
+                "url(https://img.freepik.com/premium-vector/shiny-abstract-bubbles-decorated-green-background-copyspace_1302-19158.jpg?w=2000)",
+              color: "#fff",
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <Box
+              sx={{
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+              }}
+            />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 3
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card
+            sx={{
+              backgroundImage:
+                "url(https://img.freepik.com/premium-photo/soap-bubbles-red-background-red-abstract-background_3248-503.jpg?w=2000)",
+              color: "#fff",
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <Box
+              sx={{
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+              }}
+            />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 4
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+      </Grid>
+    </>
+  );
+};
+
+export default Dashboard;
 
 
 
@@ -454,79 +609,46 @@ export default LoginPage;
 
 
 
-Dashboard.tsx
-import { Card, CardContent, Grid, Typography } from "@mui/material";
+Profile.tsx
 import React from "react";
 
-const Dashboard = (): JSX.Element => {
-  // console.log(localStorage.getItem("auth"));
+const Profile = () => {
+  return <div>Profile</div>;
+};
+
+export default Profile;
+
+
+
+
+
+Loader.tsx
+import React from "react";
+import CircularProgress from "@mui/material/CircularProgress";
+import { Box } from "@mui/material";
+
+const Loader = () => {
   return (
-    <>
-      <Typography variant="h3" padding={2}>
-        Dashboard
-      </Typography>
-      <Grid padding={2}>
-        <Grid item container paddingBottom={3}>
-          <Grid item lg={3} sx={{ border: "1px solid black" }}>
-            <Card>
-              <CardContent>
-                <Typography>Card 1</Typography>
-                <Typography>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
-                  eligendi.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item lg={3} sx={{ border: "1px solid black" }}>
-            <Card>
-              <CardContent>
-                <Typography>Card 2</Typography>
-                <Typography>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
-                  eligendi.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item lg={3} sx={{ border: "1px solid black" }}>
-            <Card>
-              <CardContent>
-                <Typography>Card 3</Typography>
-                <Typography>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
-                  eligendi.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item lg={3} sx={{ border: "1px solid black" }}>
-            <Card>
-              <CardContent>
-                <Typography>Card 3</Typography>
-                <Typography>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Id,
-                  eligendi.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Grid>
-    </>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <CircularProgress />
+    </Box>
   );
 };
 
-export default Dashboard;
+export default Loader;
 
 
 
 
 
-authContext.tsx
+Context.tsx
 import React, { ReactNode, createContext, useContext, useState } from "react";
 
 interface AuthContextType {
@@ -569,6 +691,43 @@ export function AuthConsumer() {
 }
 
 export default AuthConsumer;
+
+
+
+
+
+Layout.tsx
+import { Grid } from "@mui/material";
+import React, { useState } from "react";
+import "../Layout/Layout.css";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
+import Navbar from "../Navbar/Navbar";
+
+const Layout = (): JSX.Element => {
+  const [isOpen, setIsClose] = useState<boolean>(true);
+
+  const toggleSidebar = () => {
+    setIsClose((toogle) => !toogle);
+  };
+  return (
+    <div>
+      <Grid className="layout">
+        <Grid className={isOpen ? "layout-sidebar" : "layout-sidebar-sm"}>
+          <Sidebar />
+        </Grid>
+        <Grid className="layout-navbar">
+          <Navbar toogleSidebar={toggleSidebar} />
+        </Grid>
+        <Grid className="outlet">
+          <Outlet />
+        </Grid>
+      </Grid>
+    </div>
+  );
+};
+
+export default Layout;
 
 
 
@@ -620,7 +779,7 @@ const Sidebar = (): JSX.Element => {
               leaveDelay={200}
               placement="bottom"
             >
-              <ListItemButton className="sidebar-listitem-active-btn">
+              <ListItemButton className="sidebar-listitem-btn">
                 <ListItemIcon className="sidebar-icon">
                   <Dashboard />
                 </ListItemIcon>
@@ -643,7 +802,7 @@ const Sidebar = (): JSX.Element => {
               placement="bottom"
             >
               <ListItemButton
-                className="sidebar-listitem-active-btn"
+                className="sidebar-listitem-btn"
                 onClick={handleLogout}
               >
                 <ListItemIcon className="sidebar-icon">
@@ -683,15 +842,16 @@ interface NavbarProps {
   };
 }
 const Navbar = ({ toogleSidebar }: any): JSX.Element => {
+  const token = useSelector((state: any) => state.LoginAuthReducer.token);
+  const decodeToken: NavbarProps = jwtDecode(token);
+  const name = decodeToken.user.firstname + " " + decodeToken.user.lastname;
+  const role = decodeToken.user.role;
+
   const [isOpen, setOpen] = useState<boolean>(false);
   const toogleSiderbar = () => {
     setOpen(!isOpen);
     toogleSidebar(isOpen);
   };
-  const token = useSelector((state: any) => state.LoginAuthReducer.token);
-  const decodeToken: NavbarProps = jwtDecode(token);
-  const name = decodeToken.user.firstname + " " + decodeToken.user.lastname;
-  const role = decodeToken.user.role;
   return (
     <div>
       <Grid className="navbar">
@@ -721,48 +881,12 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
 
 export default Navbar;
 
-
-
-
-
-Layout.tsx
-import { Grid } from "@mui/material";
-import React, { useState } from "react";
-import "../Layout/Layout.css";
-import { Outlet } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
-import Navbar from "../Navbar/Navbar";
-
-const Layout = (): JSX.Element => {
-  const [isOpen, setIsClose] = useState<boolean>(true);
-
-  const toggleSidebar = () => {
-    setIsClose((toogle) => !toogle);
-  };
-  return (
-    <div>
-      <Grid className="layout">
-        <Grid className={isOpen ? "layout-sidebar" : "layout-sidebar-sm"}>
-          <Sidebar />
-        </Grid>
-        <Grid className="layout-navbar">
-          <Navbar toogleSidebar={toggleSidebar} />
-        </Grid>
-        <Grid className="outlet">
-          <Outlet />
-        </Grid>
-      </Grid>
-    </div>
-  );
-};
-
-export default Layout;
+/*End of Frontend*/
 
 
 
 
 
-Backend
 index.js
 const express = require('express');
 const app = express();
@@ -929,7 +1053,7 @@ app.use(protectedRoute);
 
 
 
-authMiddleWare.js
+middleware.js
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
@@ -955,7 +1079,6 @@ module.exports = authMiddleware;
 
 
 
-
 UserSchema.js
 const mongoose = require('mongoose')
 const User = new mongoose.Schema({
@@ -968,3 +1091,5 @@ const User = new mongoose.Schema({
 }, { timestamps: true })
 const model = new mongoose.model("Panel-Project", User)
 module.exports = model
+
+/*End of Backend*/
