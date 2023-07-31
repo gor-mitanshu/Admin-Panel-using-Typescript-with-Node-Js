@@ -98,7 +98,7 @@ const LoginPage = (): JSX.Element => {
             Login
           </Typography>
           {error && (
-            <Typography color="error" fontWeight={700}>
+            <Typography color="error" fontWeight={700} paddingTop={2}>
               {error}
             </Typography>
           )}

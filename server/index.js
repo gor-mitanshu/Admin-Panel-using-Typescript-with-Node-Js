@@ -66,7 +66,7 @@ app.post('/api/login', async (req, res) => {
           if (!!user) {
                const hashedPassword = await bcrypt.compare(req.body.password, user.password);
                if (!!hashedPassword) {
-                    const expiresIn = 20;
+                    const expiresIn = 60;
                     const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn });
                     return res.status(200).send({
                          success: true,
@@ -95,52 +95,66 @@ app.post('/api/login', async (req, res) => {
      }
 });
 
-// // Get user details
-// app.get('/api/user', async (req, res) => {
-//      try {
-//           const token = req.headers.authorization;
-
-//           if (!token) {
-//                return res.status(401).send({
-//                     success: false,
-//                     message: "Authorization header missing"
-//                });
-//           }
-
-//           const tokenWithoutBearer = token.replace('Bearer ', '');
-//           const data = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
-
-//           const user = await User.findOne({ _id: data.user._id });
-
-//           if (user) {
-//                return res.status(200).send({
-//                     success: true,
-//                     message: "Success",
-//                     data: user
-//                });
-//           } else {
-//                return res.status(401).send({
-//                     success: false,
-//                     message: "Data Not Found"
-//                });
-//           }
-//      } catch (error) {
-//           console.log(error);
-//           res.status(404).send({
-//                success: false,
-//                message: "Something went wrong",
-//                error
-//           });
-//      }
-// });
-
 // Protected Route 
-
 const protectedRoute = express.Router();
+app.use(authMiddleWare);
 
-protectedRoute.get('/api/protectedRoute', authMiddleWare, (req, res) => {
-     const { user } = req;
-     return res.send({ success: true, message: "This is a Protected Route", user: user });
+// Get User
+protectedRoute.get('/api/getuser', async (req, res) => {
+     try {
+          // Get the user ID from req.user
+          const userId = req.user._id;
+          // Find the user by ID
+          const user = await User.findById(userId);
+          if (!user) {
+               return res.status(404).send({ success: false, message: 'User not found' });
+          }
+          // Return the user information
+          return res.status(200).send({
+               success: true,
+               message: 'User information retrieved successfully',
+               user: user,
+          });
+     } catch (error) {
+          console.error(error);
+          return res.status(500).send({
+               success: false,
+               message: 'Something went wrong',
+               error: error.message,
+          });
+     }
 });
 
+// Update User
+protectedRoute.put('/api/updateuser', async (req, res) => {
+     try {
+          // Get the user ID from req.user
+          const userId = req.user._id;
+          // Find the user by ID
+          const user = await User.findById(userId);
+          if (!user) {
+               return res.status(404).send({ success: false, message: 'User not found' });
+          }
+          // Update user information based on request body
+          user.firstname = req.body.firstname || user.firstname;
+          user.lastname = req.body.lastname || user.lastname;
+          user.email = req.body.email || user.email;
+          user.phone = req.body.phone || user.phone;
+          // Save the updated user to the database
+          await user.save();
+
+          return res.status(200).send({
+               success: true,
+               message: 'User updated successfully',
+               user: user,
+          });
+     } catch (error) {
+          console.error(error);
+          return res.status(500).send({
+               success: false,
+               message: 'Something went wrong',
+               error: error.message,
+          });
+     }
+});
 app.use(protectedRoute);
