@@ -26,7 +26,6 @@ const ProtectedRoute = ({ children }: any) => {
         });
       } catch (error: any) {
         if (error.response && error.response.status === 401) {
-          console.log(error.response.data.message);
           dispatch<any>(logout());
           persistor.purge();
         }
