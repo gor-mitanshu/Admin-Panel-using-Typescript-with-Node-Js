@@ -65,17 +65,25 @@ import { logout } from "redux/Action";
 function App() {
   const dispatch = useDispatch();
   const token = useSelector((state: any) => state.LoginAuthReducer.token);
+
   useEffect(() => {
-    if (!!token) {
-      const decodeToken: any = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodeToken.exp < currentTime) {
-        // alert("Your session has expired. Please try logging in again.");
-        dispatch<any>(logout());
+    const checkTokenValidity = () => {
+      if (!!token) {
+        const decodeToken: any = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+        if (decodeToken.exp < currentTime) {
+          dispatch<any>(logout());
+        }
       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    };
+    checkTokenValidity();
+    // Add an interval to check token validity every minute
+    const tokenCheckInterval = setInterval(checkTokenValidity, 60000);
+    return () => {
+      clearInterval(tokenCheckInterval);
+    };
+  }, [token, dispatch]);
+
   return (
     <>
       <AuthProvider>
