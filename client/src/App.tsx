@@ -6,25 +6,25 @@ import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/Dashboard";
 import { AuthProvider } from "context/authContext";
 import ProtectedRoute from "protectedRoute/ProtectedRoute";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import jwtDecode from "jwt-decode";
-import { logout } from "redux/Action";
+// import { useDispatch } from "react-redux";
+// import { useSelector } from "react-redux";
+// import jwtDecode from "jwt-decode";
+// import { logout } from "redux/Action";
 
 function App() {
-  const dispatch = useDispatch();
-  const token = useSelector((state: any) => state.LoginAuthReducer.token);
-  useEffect(() => {
-    if (!!token) {
-      const decodeToken: any = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodeToken.exp < currentTime) {
-        // alert("Your session has expired. Please try logging in again.");
-        dispatch<any>(logout());
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // const dispatch = useDispatch();
+  // const token = useSelector((state: any) => state.LoginAuthReducer.token);
+  // useEffect(() => {
+  //   if (!!token) {
+  //     const decodeToken: any = jwtDecode(token);
+  //     const currentTime = Date.now() / 1000;
+  //     if (decodeToken.exp < currentTime) {
+  //       // alert("Your session has expired. Please try logging in again.");
+  //       dispatch<any>(logout());
+  //     }
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
   return (
     <>
       <AuthProvider>

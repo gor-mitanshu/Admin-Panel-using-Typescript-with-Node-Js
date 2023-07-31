@@ -75,9 +75,26 @@ const LoginPage = (): JSX.Element => {
             justifyContent: "center",
             flexDirection: "column",
             alignItems: "center",
+            border: "1px solid black",
+            borderRadius: "15px",
+            padding: "50px 20px",
+            // cursor: "pointer",
           }}
         >
-          <Typography variant="h4" component="h1">
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              backgroundImage:
+                "url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZt5I48sOtBOShTSLZaiIm_xGmaMzXdqLf-Xlv0OgD&s)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              color: "transparent",
+              fontWeight: "900",
+            }}
+          >
             Login
           </Typography>
           {error && (
@@ -132,6 +149,14 @@ const LoginPage = (): JSX.Element => {
               Login
             </Button>
           </form>
+          <Typography
+            variant="caption"
+            fontSize={15}
+            color={"blue"}
+            sx={{ textDecoration: "underline", cursor: "pointer" }}
+          >
+            Forget Password
+          </Typography>
         </Box>
       </Container>
     </>

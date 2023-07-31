@@ -19,9 +19,7 @@ const ProtectedRoute = ({ children }: any) => {
 
   return (
     <>
-      {authed === true ? (
-        children
-      ) : checkToken ? (
+      {authed === true || checkToken ? (
         children
       ) : (
         <Navigate to={"/login"} replace state={location?.pathname} />
