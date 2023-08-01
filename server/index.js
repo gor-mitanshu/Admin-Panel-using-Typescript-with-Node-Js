@@ -131,10 +131,10 @@ protectedRoute.get('/api/getuser', async (req, res) => {
 });
 
 // Update User
-protectedRoute.put('/api/updateuser', async (req, res) => {
+protectedRoute.put('/api/updateuser/:id', async (req, res) => {
      try {
           // Get the user ID from req.user
-          const userId = req.user._id;
+          const userId = req.params.id;
           // Find the user by ID
           const user = await User.findById(userId);
           if (!user) {

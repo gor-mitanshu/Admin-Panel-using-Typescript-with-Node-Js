@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserDetails, logout, updateLoggedInUser } from "redux/Action";
 import { User } from "redux/types/authTypes";
-import "../Profile/ProfilePage.css";
+import "./ProfilePage.css";
 
 const Profile: React.FC = () => {
   const dispatch = useDispatch();

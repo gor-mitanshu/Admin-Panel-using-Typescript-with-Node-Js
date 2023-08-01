@@ -6,7 +6,7 @@ import ProtectedRoute from "protectedRoute/ProtectedRoute";
 import LoginPage from "pages/Login/LoginPage";
 import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/DashboardPage";
-import Profile from "pages/Profile/ProfilePage";
+import Profile from "pages/Profile/ProfilePage/ProfilePage";
 
 function App() {
   return (
