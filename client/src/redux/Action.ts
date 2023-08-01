@@ -1,4 +1,4 @@
-// import axios from "axios";
+import axios from "axios";
 import { Dispatch } from "redux";
 import { AuthActionTypes, User } from "./types/authTypes";
 import api from "utils/api";
@@ -11,7 +11,7 @@ interface LoginRequestPayload {
 export const login =
   (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
     try {
-      const response = await api.post(
+      const response = await axios.post(
         `${process.env.REACT_APP_API}/api/login`,
         payload
       );
@@ -52,7 +52,7 @@ export const getUser = () => async (dispatch: Dispatch, getState: any) => {
     console.log(error);
     dispatch({
       type: AuthActionTypes.GET_USER_FAILURE,
-      payload: "Error fetching user data.",
+      payload: error,
     });
   }
 };

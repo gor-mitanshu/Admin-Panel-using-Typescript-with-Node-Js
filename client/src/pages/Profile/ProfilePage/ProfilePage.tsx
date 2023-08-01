@@ -27,16 +27,20 @@ const Profile: React.FC = () => {
       {profile ? (
         <div>
           <Typography variant="body1" gutterBottom>
-            <span className="label">First Name:</span> {profile.firstname}
+            <span className="label">First Name:</span>{" "}
+            <span className="label-info">{profile.firstname}</span>
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <span className="label">Last Name:</span> {profile.lastname}
+            <span className="label">Last Name:</span>{" "}
+            <span className="label-info">{profile.lastname}</span>
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <span className="label">Email:</span> {profile.email}
+            <span className="label">Email:</span>{" "}
+            <span className="label-info">{profile.email}</span>
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <span className="label">Phone:</span> {profile.phone}
+            <span className="label">Phone:</span>{" "}
+            <span className="label-info">{profile.phone}</span>
           </Typography>
           <Button
             variant="contained"
