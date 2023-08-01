@@ -1,3 +1,4 @@
+/*Front-End*/
 index.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -30,6 +31,7 @@ import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/Dashboard";
 import { AuthProvider } from "context/authContext";
 import ProtectedRoute from "protectedRoute/ProtectedRoute";
+import Profile from "pages/Profile/Profile";
 
 function App() {
   return (
@@ -55,6 +57,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>
@@ -74,6 +84,29 @@ export const enum AuthActionTypes {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   LOGIN_FAILURE = "LOGIN_FAILURE",
   LOGOUT = "LOGOUT",
+  GET_USER_SUCCESS = "GET_USER_SUCCESS",
+  GET_USER_FAILURE = "GET_USER_FAILURE",
+  UPDATE_USER_SUCCESS = "UPDATE_USER_SUCCESS",
+  UPDATE_USER_FAILURE = "UPDATE_USER_FAILURE",
+}
+export interface User {
+  _id?: number;
+  firstname: string;
+  lastname: string;
+  phone: string;
+  email: string;
+  role?: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+export interface AuthState {
+  token: string | null;
+  error: string | null;
+}
+
+export interface UserState {
+  user: User | null;
+  error: string | null;
 }
 
 
@@ -81,16 +114,11 @@ export const enum AuthActionTypes {
 
 
 Reducer.ts
-import { AuthActionTypes } from "./types/authTypes";
+import { AuthActionTypes, AuthState, UserState } from "./types/authTypes";
 import { combineReducers } from "redux";
 
-interface AuthState {
-  token: string | null;
-  error: string | null;
-}
-
-const initialLoginState = {
-  token: localStorage.getItem("auth"),
+const initialLoginState: AuthState = {
+  token: null,
   error: null,
 };
 const LoginAuthReducer = (
@@ -121,49 +149,48 @@ const LoginAuthReducer = (
   }
 };
 
+const initialUserState: UserState = {
+  user: null,
+  error: null,
+};
+
+const UserLoggedInReducer = (
+  state = initialUserState,
+  action: any
+): UserState => {
+  switch (action.type) {
+    case AuthActionTypes.GET_USER_SUCCESS:
+      return {
+        ...state,
+        user: action.payload,
+        error: null,
+      };
+    case AuthActionTypes.GET_USER_FAILURE:
+      return {
+        ...state,
+        user: null,
+        error: action.payload,
+      };
+    case AuthActionTypes.UPDATE_USER_SUCCESS:
+      return {
+        ...state,
+        user: action.payload,
+        error: null,
+      };
+    case AuthActionTypes.UPDATE_USER_FAILURE:
+      return {
+        ...state,
+        error: action.payload,
+      };
+    default:
+      return state;
+  }
+};
 const rootReducer = combineReducers({
   LoginAuthReducer,
+  UserLoggedInReducer,
 });
 export default rootReducer;
-
-
-
-
-
-Action.ts
-import axios from "axios";
-import { Dispatch } from "redux";
-import { AuthActionTypes } from "./types/authTypes";
-
-interface LoginRequestPayload {
-  email: string;
-  password: string;
-}
-
-export const login =
-  (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/login`,
-        payload
-      );
-      const { token } = response.data.result;
-      dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
-      return response;
-    } catch (error: any) {
-      console.log(error);
-      dispatch({
-        type: AuthActionTypes.LOGIN_FAILURE,
-        payload: error.response.data.message,
-      });
-      throw error;
-    }
-  };
-
-export const logout = () => (dispatch: Dispatch) => {
-  // localStorage.removeItem("auth");
-  dispatch({ type: AuthActionTypes.LOGOUT });
-};
 
 
 
@@ -195,39 +222,102 @@ export { store, persistor };
 
 
 
+action.ts
+import axios from "axios";
+import { Dispatch } from "redux";
+import { AuthActionTypes, User } from "./types/authTypes";
+
+interface LoginRequestPayload {
+  email: string;
+  password: string;
+}
+
+export const login =
+  (payload: LoginRequestPayload) => async (dispatch: Dispatch) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API}/api/login`,
+        payload
+      );
+      const { token } = response.data.result;
+      dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
+      return response;
+    } catch (error: any) {
+      console.log(error);
+      dispatch({
+        type: AuthActionTypes.LOGIN_FAILURE,
+        payload: error.response.data.message,
+      });
+      throw error;
+    }
+  };
+
+export const getUserDetails =
+  () => async (dispatch: Dispatch, getState: any) => {
+    try {
+      const token = getState().LoginAuthReducer.token;
+      if (!token) {
+        throw new Error("Token not found");
+      }
+      const response = await axios.get(
+        `${process.env.REACT_APP_API}/api/getuser`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      dispatch({
+        type: AuthActionTypes.GET_USER_SUCCESS,
+        payload: response.data.user,
+      });
+    } catch (error) {
+      console.log(error);
+      dispatch({
+        type: AuthActionTypes.GET_USER_FAILURE,
+        payload: "Error fetching user data.",
+      });
+    }
+  };
+
+export const updateLoggedInUser =
+  (updatedUserData: User) => async (dispatch: Dispatch) => {
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API}/api/updateuser`,
+        updatedUserData
+      );
+      dispatch({
+        type: AuthActionTypes.UPDATE_USER_SUCCESS,
+        payload: updatedUserData,
+      });
+    } catch (error) {
+      console.log(error);
+      dispatch({
+        type: AuthActionTypes.UPDATE_USER_FAILURE,
+        payload: "Error updating user data.",
+      });
+    }
+  };
+
+export const logout = () => (dispatch: Dispatch) => {
+  dispatch({ type: AuthActionTypes.LOGOUT });
+};
+
+
+
+
+
 ProtectedRoute.tsx
-import React, { useEffect } from "react";
+import React from "react";
 import useAuth from "../context/authContext";
 import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
-import { logout } from "redux/Action";
-import { useDispatch } from "react-redux";
 
 const ProtectedRoute = ({ children }: any) => {
   const { authed }: any = useAuth();
   const { location }: any = useLocation();
-  // const checkToken = localStorage.getItem("auth");
-
-  const dispatch = useDispatch();
   const accessToken = useSelector((state: any) => state.LoginAuthReducer.token);
-  useEffect(() => {
-    const checkTokenValidity = async () => {
-      try {
-        await axios.get(`${process.env.REACT_APP_API}/api/protectedRoute`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-      } catch (error: any) {
-        if (error.response && error.response.status === 401) {
-          dispatch<any>(logout());
-        }
-      }
-    };
-
-    checkTokenValidity();
-  }, [dispatch, accessToken]);
 
   return (
     <>
@@ -246,198 +336,7 @@ export default ProtectedRoute;
 
 
 
-Dashboard.tsx
-import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
-import React from "react";
-
-const Dashboard = (): JSX.Element => {
-  // console.log(localStorage.getItem("auth"));
-  return (
-    <>
-      {/* <Typography variant="h3" padding={2}>
-        Dashboard
-      </Typography> */}
-      <Grid container padding={2} spacing={1}>
-        <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-vector/abstract-bubbles-black-background_336924-3490.jpg)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-              }}
-            />
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <CardContent>
-                <Typography
-                  component="div"
-                  variant="h5"
-                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
-                >
-                  Card 1
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  color="#fff"
-                  component="div"
-                  sx={{ position: "relative", zIndex: 1 }}
-                >
-                  Lorem ipsum dolor sit
-                </Typography>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
-        <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-photo/bubbles-orange-water-3d-render_85770-45.jpg)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-              }}
-            />
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <CardContent>
-                <Typography
-                  component="div"
-                  variant="h5"
-                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
-                >
-                  Card 2
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  color="#fff"
-                  component="div"
-                  sx={{ position: "relative", zIndex: 1 }}
-                >
-                  Lorem ipsum dolor sit
-                </Typography>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
-        <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-vector/shiny-abstract-bubbles-decorated-green-background-copyspace_1302-19158.jpg?w=2000)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-              }}
-            />
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <CardContent>
-                <Typography
-                  component="div"
-                  variant="h5"
-                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
-                >
-                  Card 3
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  color="#fff"
-                  component="div"
-                  sx={{ position: "relative", zIndex: 1 }}
-                >
-                  Lorem ipsum dolor sit
-                </Typography>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
-        <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-photo/soap-bubbles-red-background-red-abstract-background_3248-503.jpg?w=2000)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-              }}
-            />
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <CardContent>
-                <Typography
-                  component="div"
-                  variant="h5"
-                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
-                >
-                  Card 4
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  color="#fff"
-                  component="div"
-                  sx={{ position: "relative", zIndex: 1 }}
-                >
-                  Lorem ipsum dolor sit
-                </Typography>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
-      </Grid>
-    </>
-  );
-};
-
-export default Dashboard;
-
-
-
-
-
-Login.tsx
+LoginPage.tsx
 import React, { useEffect, useState } from "react";
 import {
   TextField,
@@ -453,6 +352,7 @@ import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../context/authContext";
+import "../Login/LoginPage.css";
 
 const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
@@ -508,33 +408,8 @@ const LoginPage = (): JSX.Element => {
   return (
     <>
       <Container component="main" maxWidth="xs">
-        <Box
-          sx={{
-            marginTop: 15,
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-            alignItems: "center",
-            border: "1px solid black",
-            borderRadius: "15px",
-            padding: "50px 20px",
-            // cursor: "pointer",
-          }}
-        >
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              backgroundImage:
-                "url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZt5I48sOtBOShTSLZaiIm_xGmaMzXdqLf-Xlv0OgD&s)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              color: "transparent",
-              fontWeight: "900",
-            }}
-          >
+        <Box className="login-Outlet-box">
+          <Typography variant="h4" component="h1" className="login-title">
             Login
           </Typography>
           {error && (
@@ -609,14 +484,223 @@ export default LoginPage;
 
 
 
-Profile.tsx
-import React from "react";
+ProfilePage.tsx
+import { Button, TextField, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserDetails, logout, updateLoggedInUser } from "redux/Action";
+import { User } from "redux/types/authTypes";
+import "../Profile/ProfilePage.css";
 
-const Profile = () => {
-  return <div>Profile</div>;
+const Profile: React.FC = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state: any) => state.UserLoggedInReducer.user);
+  const [userDataToUpdate, setUserDataToUpdate] = useState<User | null>(null);
+  const [updatedData, setUpdatedData] = useState<Partial<User>>({});
+
+  useEffect(() => {
+    dispatch<any>(getUserDetails());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user) {
+      setUpdatedData(user);
+    }
+  }, [user]);
+
+  const handleUpdateUser = () => {
+    if (userDataToUpdate) {
+      const updatedUserData = { ...userDataToUpdate, ...updatedData };
+      dispatch<any>(updateLoggedInUser(updatedUserData));
+      setUserDataToUpdate(null);
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch<any>(logout());
+  };
+
+  if (!user) {
+    return <div>Loading user data...</div>;
+  }
+
+  return (
+    <div>
+      <Typography variant="h4">Welcome, {user.firstname}!</Typography>
+      <TextField
+        label="First Name"
+        value={updatedData.firstname || ""}
+        onChange={(e: { target: { value: any } }) =>
+          setUpdatedData({ ...updatedData, firstname: e.target.value })
+        }
+      />
+      <TextField
+        label="Last Name"
+        value={updatedData.lastname || ""}
+        onChange={(e: { target: { value: any } }) =>
+          setUpdatedData({ ...updatedData, lastname: e.target.value })
+        }
+      />
+      <TextField
+        label="Phone"
+        value={updatedData.phone || ""}
+        onChange={(e: { target: { value: any } }) =>
+          setUpdatedData({ ...updatedData, phone: e.target.value })
+        }
+      />
+      <TextField
+        label="Email"
+        value={updatedData.email || ""}
+        onChange={(e: { target: { value: any } }) =>
+          setUpdatedData({ ...updatedData, email: e.target.value })
+        }
+      />
+      {userDataToUpdate ? (
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUpdateUser}
+          >
+            Save Changes
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setUserDataToUpdate(null)}
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button variant="contained" onClick={() => setUserDataToUpdate(user)}>
+          Update User
+        </Button>
+      )}
+      <Button variant="contained" onClick={handleLogout}>
+        Logout
+      </Button>
+    </div>
+  );
 };
 
 export default Profile;
+
+
+
+
+
+DashboardPage.tsx
+import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
+import React from "react";
+import "../Dashboard/DashboardPage.css";
+
+const Dashboard = (): JSX.Element => {
+  return (
+    <>
+      <Grid container padding={2} spacing={1}>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card className="card card-1">
+            <Box className="card-box" />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 1
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card className="card card-2">
+            <Box className="card-box" />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 2
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card className="card card-3">
+            <Box className="card-box" />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 3
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item lg={3} md={6} sm={12} xs={12}>
+          <Card className="card card-4">
+            <Box className="card-box" />
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CardContent>
+                <Typography
+                  component="div"
+                  variant="h5"
+                  sx={{ fontSize: "2rem", position: "relative", zIndex: 1 }}
+                >
+                  Card 4
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="#fff"
+                  component="div"
+                  sx={{ position: "relative", zIndex: 1 }}
+                >
+                  Lorem ipsum dolor sit
+                </Typography>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+      </Grid>
+    </>
+  );
+};
+
+export default Dashboard;
 
 
 
@@ -746,12 +830,13 @@ import {
   Tooltip,
   Zoom,
 } from "@mui/material";
-import { Dashboard, Logout } from "@mui/icons-material";
+import { Dashboard, Logout, Person } from "@mui/icons-material";
 import "../Sidebar/Sidebar.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "redux/Action";
 import useAuth from "../../context/authContext";
+import { NavLink } from "react-router-dom";
 
 const Sidebar = (): JSX.Element => {
   const navigate = useNavigate();
@@ -770,26 +855,52 @@ const Sidebar = (): JSX.Element => {
           <Toolbar />
           <Divider />
 
-          <ListItem disablePadding className="sidebar-item">
-            <Tooltip
-              title={"Dashboard"}
-              arrow
-              TransitionComponent={Zoom}
-              enterDelay={800}
-              leaveDelay={200}
-              placement="bottom"
-            >
-              <ListItemButton className="sidebar-listitem-btn">
-                <ListItemIcon className="sidebar-icon">
-                  <Dashboard />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Dashboard"
-                  sx={{ whiteSpace: "nowrap" }}
-                />
-              </ListItemButton>
-            </Tooltip>
-          </ListItem>
+          <NavLink to={"/dashboard"} className={"link"}>
+            <ListItem disablePadding className="sidebar-item">
+              <Tooltip
+                title={"Dashboard"}
+                arrow
+                TransitionComponent={Zoom}
+                enterDelay={800}
+                leaveDelay={200}
+                placement="bottom"
+              >
+                <ListItemButton className="sidebar-listitem-btn">
+                  <ListItemIcon className="sidebar-icon">
+                    <Dashboard />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Dashboard"
+                    sx={{ whiteSpace: "nowrap" }}
+                  />
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
+          </NavLink>
+          <Divider />
+
+          <NavLink to={"/profile"} className={"link"}>
+            <ListItem disablePadding className="sidebar-item">
+              <Tooltip
+                title={"Profile"}
+                arrow
+                TransitionComponent={Zoom}
+                enterDelay={800}
+                leaveDelay={200}
+                placement="bottom"
+              >
+                <ListItemButton className="sidebar-listitem-btn">
+                  <ListItemIcon className="sidebar-icon">
+                    <Person />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Profile"
+                    sx={{ whiteSpace: "nowrap" }}
+                  />
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
+          </NavLink>
           <Divider />
 
           <ListItem disablePadding className="sidebar-item logout">
@@ -855,21 +966,14 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
   return (
     <div>
       <Grid className="navbar">
-        <AppBar>
+        <AppBar className="appbar">
           <Toolbar className="toolbar-navbar">
             <MenuIcon className="menu-icon" onClick={toogleSiderbar} />
-            <Grid
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
+            <Grid className="navbar-name-content-center">
               <Typography className="navbar-title">Panel</Typography>
               <Typography className="navbar-name">
-                <span style={{ color: "#cacaca" }}>{role.toUpperCase()}</span>:{" "}
-                <span style={{ color: "#ff4382" }}>{name.toUpperCase()}</span>
+                <span className="loggedInRole">{role.toUpperCase()}:</span>
+                <span className="loggedInName"> {name.toUpperCase()}</span>
               </Typography>
             </Grid>
           </Toolbar>
@@ -881,7 +985,91 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
 
 export default Navbar;
 
-/*End of Frontend*/
+
+
+
+
+package.json
+"dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.1",
+    "@mui/material": "^5.14.1",
+    "@mui/styled-engine-sc": "^5.12.0",
+    "@reduxjs/toolkit": "^1.9.5",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/axios": "^0.14.0",
+    "@types/jest": "^27.0.1",
+    "@types/jwt-decode": "^3.1.0",
+    "@types/node": "^16.7.13",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/react-redux": "^7.1.25",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/react-toastify": "^4.1.0",
+    "@types/redux": "^3.6.0",
+    "@types/redux-persist": "^4.3.1",
+    "@types/redux-thunk": "^2.1.0",
+    "axios": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "jwt-decode": "^3.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.1.1",
+    "react-router-dom": "^6.14.2",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^9.1.3",
+    "redux": "^4.2.1",
+    "redux-persist": "^6.0.0",
+    "redux-thunk": "^2.4.2",
+    "styled-components": "^6.0.5",
+    "typescript": "^4.4.2",
+    "web-vitals": "^2.1.0"
+  },
+
+
+
+
+
+  /*Back-end*/
+  middleware.js
+const jwt = require("jsonwebtoken");
+const authMiddleware = (req, res, next) => {
+     const token = req.headers.authorization;
+     if (!token) {
+          return res.status(401).send({ success: false, message: "Authorization Headers Missing" });
+     }
+     try {
+          const tokenWithoutBearer = token.replace('Bearer ', '');
+          const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
+          req.user = decoded.user;
+          next();
+     } catch (error) {
+          if (error.name === 'TokenExpiredError') {
+               return res.status(401).send({ success: false, message: 'Token has Expired' });
+          }
+          return res.status(401).send({ success: false, message: "Invalid Token" });
+     }
+};
+module.exports = authMiddleware;
+
+
+
+
+Schema.js
+const mongoose = require('mongoose')
+const User = new mongoose.Schema({
+     firstname: { type: String, required: true },
+     lastname: { type: String, required: true },
+     phone: { type: Number, required: true },
+     email: { type: String, required: true, unique: true },
+     password: { type: String, required: true },
+     role: { type: String }
+}, { timestamps: true })
+const model = new mongoose.model("Panel-Project", User)
+module.exports = model
 
 
 
@@ -901,7 +1089,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const colors = require("colors");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const authMiddleWare = require("./middleware/authMiddleware");
+const authMiddleware = require("./middleware/authMiddleware");
 
 mongoose.connect(process.env.MONGO_URL).then(e => {
      console.log(`Connection established with Database`.bgGreen.white)
@@ -956,7 +1144,7 @@ app.post('/api/login', async (req, res) => {
           if (!!user) {
                const hashedPassword = await bcrypt.compare(req.body.password, user.password);
                if (!!hashedPassword) {
-                    const expiresIn = 60;
+                    const expiresIn = 20000;
                     const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn });
                     return res.status(200).send({
                          success: true,
@@ -985,9 +1173,14 @@ app.post('/api/login', async (req, res) => {
      }
 });
 
+// Logout
+app.post('/api/logout', (req, res) => {
+     res.json({ success: true, message: 'Logout Successful' });
+});
+
 // Protected Route 
 const protectedRoute = express.Router();
-app.use(authMiddleWare);
+app.use(authMiddleware);
 
 // Get User
 protectedRoute.get('/api/getuser', async (req, res) => {
@@ -1052,44 +1245,16 @@ app.use(protectedRoute);
 
 
 
-
-middleware.js
-const jwt = require("jsonwebtoken");
-
-const authMiddleware = (req, res, next) => {
-     const token = req.headers.authorization;
-     if (!token) {
-          return res.status(401).send({ success: false, message: "Authorization Headers Missing" });
-     }
-     const tokenWithoutBearer = token.replace('Bearer ', '');
-     try {
-          const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
-          req.user = decoded.user;
-          next();
-     } catch (error) {
-          if (error.name === 'TokenExpiredError') {
-               return res.status(401).send({ success: false, message: 'Token has Expired' });
-          }
-          return res.status(401).send({ success: false, message: "Invalid Token" });
-     }
-};
-
-module.exports = authMiddleware;
-
-
-
-
-UserSchema.js
-const mongoose = require('mongoose')
-const User = new mongoose.Schema({
-     firstname: { type: String, required: true },
-     lastname: { type: String, required: true },
-     phone: { type: Number, required: true },
-     email: { type: String, required: true, unique: true },
-     password: { type: String, required: true },
-     role: { type: String }
-}, { timestamps: true })
-const model = new mongoose.model("Panel-Project", User)
-module.exports = model
-
-/*End of Backend*/
+package.json
+"dependencies": {
+    "bcrypt": "^5.1.0",
+    "body-parser": "^1.20.2",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "^7.4.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.0.1"
+  }

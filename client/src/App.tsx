@@ -1,12 +1,12 @@
 import React from "react";
-import "./App.css";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import LoginPage from "pages/Login/LoginPage";
-import Layout from "components/Layout/Layout";
-import Dashboard from "pages/Dashboard/Dashboard";
+import "./App.css";
 import { AuthProvider } from "context/authContext";
 import ProtectedRoute from "protectedRoute/ProtectedRoute";
-import Profile from "pages/Profile/Profile";
+import LoginPage from "pages/Login/LoginPage";
+import Layout from "components/Layout/Layout";
+import Dashboard from "pages/Dashboard/DashboardPage";
+import Profile from "pages/Profile/ProfilePage";
 
 function App() {
   return (

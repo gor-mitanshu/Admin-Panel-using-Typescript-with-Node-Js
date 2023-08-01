@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
-import "../Dashboard/Dashboard.css";
+import "../Dashboard/DashboardPage.css";
 
 const Dashboard = (): JSX.Element => {
   return (
