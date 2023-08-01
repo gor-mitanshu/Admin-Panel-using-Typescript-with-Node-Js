@@ -30,25 +30,11 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
         <AppBar className="appbar">
           <Toolbar className="toolbar-navbar">
             <MenuIcon className="menu-icon" onClick={toogleSiderbar} />
-            <Grid
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
+            <Grid className="navbar-name-content-center">
               <Typography className="navbar-title">Panel</Typography>
               <Typography className="navbar-name">
-                <span
-                  style={{
-                    color: "black",
-                    // color: "#cacaca"
-                  }}
-                >
-                  {role.toUpperCase()}:
-                </span>
-                <span style={{ color: "#ff4382" }}> {name.toUpperCase()}</span>
+                <span className="loggedInRole">{role.toUpperCase()}:</span>
+                <span className="loggedInName"> {name.toUpperCase()}</span>
               </Typography>
             </Grid>
           </Toolbar>

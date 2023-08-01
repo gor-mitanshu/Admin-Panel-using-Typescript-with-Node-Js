@@ -4,17 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserDetails, logout, updateLoggedInUser } from "redux/Action";
 import { User } from "redux/types/authTypes";
 
-// const useStyles = makeStyles((theme: { spacing: (arg0: number) => any }) => ({
-//   root: {
-//     display: "flex",
-//     flexDirection: "column",
-//     alignItems: "center",
-//     "& > *": {
-//       margin: theme.spacing(1),
-//     },
-//   },
-// }));
-
 const Profile: React.FC = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.UserLoggedInReducer.user);
@@ -27,7 +16,6 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      // Initialize updatedData state with the user's current data
       setUpdatedData(user);
     }
   }, [user]);
@@ -43,8 +31,6 @@ const Profile: React.FC = () => {
   const handleLogout = () => {
     dispatch<any>(logout());
   };
-
-  // const classes = useStyles();
 
   if (!user) {
     return <div>Loading user data...</div>;
@@ -81,7 +67,6 @@ const Profile: React.FC = () => {
           setUpdatedData({ ...updatedData, email: e.target.value })
         }
       />
-      {/* Add more user details as needed */}
       {userDataToUpdate ? (
         <div>
           <Button

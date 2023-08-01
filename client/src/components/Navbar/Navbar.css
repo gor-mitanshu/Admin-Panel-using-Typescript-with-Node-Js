@@ -19,7 +19,12 @@
   padding: 0 16px 0 0 !important;
   font-size: 40px !important;
 }
-
+.navbar-name-content-center {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
 .navbar-title {
   margin: 4px !important;
   font-weight: 900 !important;
@@ -31,9 +36,21 @@
   font-weight: 700 !important;
   font-size: 20px !important;
   z-index: 1 !important;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.7);
   border: 1px solid white !important;
+  border-radius: 6px !important;
   padding: 6px !important;
+}
+.loggedInName {
+  color: brown !important;
+  /* color: #ff4382 !important; */
+}
+.loggedInRole {
+  color: black !important;
+  /* color: #cacaca !important; */
+}
+.appbar {
+  background: black !important;
 }
 @media (max-width: 600px) {
   .menu-icon {
@@ -50,7 +67,4 @@
   .navbar-name {
     display: none !important;
   }
-}
-.appbar {
-  background: black !important;
 }

@@ -13,6 +13,7 @@ import { useDispatch } from "react-redux";
 import { login } from "redux/Action";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../context/authContext";
+import "../Login/LoginPage.css";
 
 const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<any>("");
@@ -68,33 +69,8 @@ const LoginPage = (): JSX.Element => {
   return (
     <>
       <Container component="main" maxWidth="xs">
-        <Box
-          sx={{
-            marginTop: 15,
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-            alignItems: "center",
-            border: "1px solid black",
-            borderRadius: "15px",
-            padding: "50px 20px",
-            // cursor: "pointer",
-          }}
-        >
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              backgroundImage:
-                "url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZt5I48sOtBOShTSLZaiIm_xGmaMzXdqLf-Xlv0OgD&s)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              color: "transparent",
-              fontWeight: "900",
-            }}
-          >
+        <Box className="login-Outlet-box">
+          <Typography variant="h4" component="h1" className="login-title">
             Login
           </Typography>
           {error && (

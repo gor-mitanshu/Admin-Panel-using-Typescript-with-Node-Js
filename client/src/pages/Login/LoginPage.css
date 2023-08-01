@@ -1,0 +1,20 @@
+.login-Outlet-box {
+  margin-top: 30% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-direction: column !important;
+  border: 1px solid black !important;
+  border-radius: 15px !important;
+  padding: 50px 20px !important;
+  /* cursor: pointer !important; */
+}
+.login-title {
+  background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZt5I48sOtBOShTSLZaiIm_xGmaMzXdqLf-Xlv0OgD&s) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  font-weight: 900 !important;
+}

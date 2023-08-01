@@ -1,32 +1,14 @@
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
+import "../Dashboard/Dashboard.css";
 
 const Dashboard = (): JSX.Element => {
   return (
     <>
       <Grid container padding={2} spacing={1}>
         <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-vector/abstract-bubbles-black-background_336924-3490.jpg)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-              // background: "black",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-              }}
-            />
+          <Card className="card card-1">
+            <Box className="card-box" />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <CardContent>
                 <Typography
@@ -49,27 +31,8 @@ const Dashboard = (): JSX.Element => {
           </Card>
         </Grid>
         <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-photo/bubbles-orange-water-3d-render_85770-45.jpg)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-                // background: "#f8c12b",
-              }}
-            />
+          <Card className="card card-2">
+            <Box className="card-box" />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <CardContent>
                 <Typography
@@ -92,27 +55,8 @@ const Dashboard = (): JSX.Element => {
           </Card>
         </Grid>
         <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-vector/shiny-abstract-bubbles-decorated-green-background-copyspace_1302-19158.jpg?w=2000)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-                // background: "#29a744",
-              }}
-            />
+          <Card className="card card-3">
+            <Box className="card-box" />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <CardContent>
                 <Typography
@@ -135,27 +79,8 @@ const Dashboard = (): JSX.Element => {
           </Card>
         </Grid>
         <Grid item lg={3} md={6} sm={12} xs={12}>
-          <Card
-            sx={{
-              backgroundImage:
-                "url(https://img.freepik.com/premium-photo/soap-bubbles-red-background-red-abstract-background_3248-503.jpg?w=2000)",
-              color: "#fff",
-              position: "relative",
-              cursor: "pointer",
-              // background: "#dc3546",
-            }}
-          >
-            <Box
-              sx={{
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.2)",
-              }}
-            />
+          <Card className="card card-4">
+            <Box className="card-box" />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <CardContent>
                 <Typography
