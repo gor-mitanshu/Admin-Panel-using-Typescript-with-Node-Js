@@ -6,7 +6,8 @@ import ProtectedRoute from "protectedRoute/ProtectedRoute";
 import LoginPage from "pages/Login/LoginPage";
 import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/DashboardPage";
-import Profile from "pages/Profile/ProfilePage/ProfilePage";
+import ProfilePage from "pages/Profile/ProfilePage/ProfilePage";
+import ProfileUpdatePage from "pages/Profile/ProfileUpdatePage/ProfileUpdatePage";
 
 function App() {
   return (
@@ -36,7 +37,15 @@ function App() {
                 path="/profile"
                 element={
                   <ProtectedRoute>
-                    <Profile />
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/updateprofile/:id"
+                element={
+                  <ProtectedRoute>
+                    <ProfileUpdatePage />
                   </ProtectedRoute>
                 }
               />

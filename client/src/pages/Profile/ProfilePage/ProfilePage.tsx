@@ -1,99 +1,52 @@
-import { Button, TextField, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getUserDetails, logout, updateLoggedInUser } from "redux/Action";
-import { User } from "redux/types/authTypes";
-import "./ProfilePage.css";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Typography, Container, Button } from "@mui/material";
+import { RootState } from "redux/combineReducer";
+import { getUser } from "redux/Action";
+import { useNavigate } from "react-router-dom";
 
 const Profile: React.FC = () => {
+  const user = useSelector((state: RootState) => state.UserReducer.user);
   const dispatch = useDispatch();
-  const user = useSelector((state: any) => state.UserLoggedInReducer.user);
-  const [userDataToUpdate, setUserDataToUpdate] = useState<User | null>(null);
-  const [updatedData, setUpdatedData] = useState<Partial<User>>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch<any>(getUserDetails());
+    dispatch<any>(getUser());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (user) {
-      setUpdatedData(user);
-    }
-  }, [user]);
-
-  const handleUpdateUser = () => {
-    if (userDataToUpdate) {
-      const updatedUserData = { ...userDataToUpdate, ...updatedData };
-      dispatch<any>(updateLoggedInUser(updatedUserData));
-      setUserDataToUpdate(null);
-    }
-  };
-
-  const handleLogout = () => {
-    dispatch<any>(logout());
-  };
-
-  if (!user) {
-    return <div>Loading user data...</div>;
-  }
-
   return (
-    <div>
-      <Typography variant="h4">Welcome, {user.firstname}!</Typography>
-      <TextField
-        label="First Name"
-        value={updatedData.firstname || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, firstname: e.target.value })
-        }
-      />
-      <TextField
-        label="Last Name"
-        value={updatedData.lastname || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, lastname: e.target.value })
-        }
-      />
-      <TextField
-        label="Phone"
-        value={updatedData.phone || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, phone: e.target.value })
-        }
-      />
-      <TextField
-        label="Email"
-        value={updatedData.email || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, email: e.target.value })
-        }
-      />
-      {userDataToUpdate ? (
+    <Container maxWidth="sm">
+      <Typography variant="h5" align="center" gutterBottom>
+        User Profile
+      </Typography>
+      {user ? (
         <div>
+          <Typography variant="body1" gutterBottom>
+            <strong>First Name:</strong> {user.firstname}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            <strong>Last Name:</strong> {user.lastname}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            <strong>Email:</strong> {user.email}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            <strong>Phone:</strong> {user.phone}
+          </Typography>
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
-            onClick={handleUpdateUser}
+            onClick={() => navigate(`/profile/updateprofile/${user._id}`)}
           >
-            Save Changes
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => setUserDataToUpdate(null)}
-          >
-            Cancel
+            Update Profile
           </Button>
         </div>
       ) : (
-        <Button variant="contained" onClick={() => setUserDataToUpdate(user)}>
-          Update User
-        </Button>
+        <Typography variant="body1" align="center">
+          Loading...
+        </Typography>
       )}
-      <Button variant="contained" onClick={handleLogout}>
-        Logout
-      </Button>
-    </div>
+    </Container>
   );
 };
 

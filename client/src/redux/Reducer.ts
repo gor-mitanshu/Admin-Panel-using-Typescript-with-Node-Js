@@ -1,11 +1,10 @@
 import { AuthActionTypes, AuthState, UserState } from "./types/authTypes";
-import { combineReducers } from "redux";
 
 const initialLoginState: AuthState = {
   token: null,
   error: null,
 };
-const LoginAuthReducer = (
+export const LoginAuthReducer = (
   state = initialLoginState,
   action: any
 ): AuthState => {
@@ -38,7 +37,7 @@ const initialUserState: UserState = {
   error: null,
 };
 
-const UserLoggedInReducer = (
+export const UserReducer = (
   state = initialUserState,
   action: any
 ): UserState => {
@@ -70,8 +69,3 @@ const UserLoggedInReducer = (
       return state;
   }
 };
-const rootReducer = combineReducers({
-  LoginAuthReducer,
-  UserLoggedInReducer,
-});
-export default rootReducer;

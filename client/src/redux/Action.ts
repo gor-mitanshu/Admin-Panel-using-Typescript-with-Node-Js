@@ -27,40 +27,48 @@ export const login =
     }
   };
 
-export const getUserDetails =
-  () => async (dispatch: Dispatch, getState: any) => {
+export const getUser = () => async (dispatch: Dispatch, getState: any) => {
+  try {
+    const token = getState().LoginAuthReducer.token;
+    if (!token) {
+      throw new Error("Token not found");
+    }
+    const response = await axios.get(
+      `${process.env.REACT_APP_API}/api/getuser`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    dispatch({
+      type: AuthActionTypes.GET_USER_SUCCESS,
+      payload: response.data.user,
+    });
+  } catch (error) {
+    console.log(error);
+    dispatch({
+      type: AuthActionTypes.GET_USER_FAILURE,
+      payload: "Error fetching user data.",
+    });
+  }
+};
+
+export const updateUser =
+  (updatedUserData: User) => async (dispatch: Dispatch, getState: any) => {
     try {
       const token = getState().LoginAuthReducer.token;
       if (!token) {
         throw new Error("Token not found");
       }
-      const response = await axios.get(
-        `${process.env.REACT_APP_API}/api/getuser`,
+      await axios.put(
+        `${process.env.REACT_APP_API}/api/updateuser/${updatedUserData._id}`,
+        updatedUserData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
-      );
-      dispatch({
-        type: AuthActionTypes.GET_USER_SUCCESS,
-        payload: response.data.user,
-      });
-    } catch (error) {
-      console.log(error);
-      dispatch({
-        type: AuthActionTypes.GET_USER_FAILURE,
-        payload: "Error fetching user data.",
-      });
-    }
-  };
-
-export const updateLoggedInUser =
-  (updatedUserData: User) => async (dispatch: Dispatch) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API}/api/updateuser`,
-        updatedUserData
       );
       dispatch({
         type: AuthActionTypes.UPDATE_USER_SUCCESS,

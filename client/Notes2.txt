@@ -21,17 +21,17 @@ root.render(
 
 
 
-
 App.tsx
 import React from "react";
-import "./App.css";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import LoginPage from "pages/Login/LoginPage";
-import Layout from "components/Layout/Layout";
-import Dashboard from "pages/Dashboard/Dashboard";
+import "./App.css";
 import { AuthProvider } from "context/authContext";
 import ProtectedRoute from "protectedRoute/ProtectedRoute";
-import Profile from "pages/Profile/Profile";
+import LoginPage from "pages/Login/LoginPage";
+import Layout from "components/Layout/Layout";
+import Dashboard from "pages/Dashboard/DashboardPage";
+import ProfilePage from "pages/Profile/ProfilePage/ProfilePage";
+import ProfileUpdatePage from "pages/Profile/ProfileUpdatePage/ProfileUpdatePage";
 
 function App() {
   return (
@@ -61,7 +61,15 @@ function App() {
                 path="/profile"
                 element={
                   <ProtectedRoute>
-                    <Profile />
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/updateprofile/:id"
+                element={
+                  <ProtectedRoute>
+                    <ProfileUpdatePage />
                   </ProtectedRoute>
                 }
               />
@@ -78,7 +86,6 @@ export default App;
 
 
 
-
 type.ts
 export const enum AuthActionTypes {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
@@ -90,7 +97,7 @@ export const enum AuthActionTypes {
   UPDATE_USER_FAILURE = "UPDATE_USER_FAILURE",
 }
 export interface User {
-  _id?: number;
+  _id?: string; // Change the type of _id from number to string since it's commonly represented as a string in MongoDB.
   firstname: string;
   lastname: string;
   phone: string;
@@ -103,7 +110,6 @@ export interface AuthState {
   token: string | null;
   error: string | null;
 }
-
 export interface UserState {
   user: User | null;
   error: string | null;
@@ -112,16 +118,14 @@ export interface UserState {
 
 
 
-
 Reducer.ts
 import { AuthActionTypes, AuthState, UserState } from "./types/authTypes";
-import { combineReducers } from "redux";
 
 const initialLoginState: AuthState = {
   token: null,
   error: null,
 };
-const LoginAuthReducer = (
+export const LoginAuthReducer = (
   state = initialLoginState,
   action: any
 ): AuthState => {
@@ -154,7 +158,7 @@ const initialUserState: UserState = {
   error: null,
 };
 
-const UserLoggedInReducer = (
+export const UserReducer = (
   state = initialUserState,
   action: any
 ): UserState => {
@@ -186,12 +190,25 @@ const UserLoggedInReducer = (
       return state;
   }
 };
+
+
+
+combineReducer.ts
+import { combineReducers } from "redux";
+import { AuthState, UserState } from "./types/authTypes";
+import { LoginAuthReducer, UserReducer } from "../redux/Reducer";
+
+export interface RootState {
+  LoginAuthReducer: AuthState;
+  UserReducer: UserState;
+}
+
 const rootReducer = combineReducers({
   LoginAuthReducer,
-  UserLoggedInReducer,
+  UserReducer,
 });
-export default rootReducer;
 
+export default rootReducer;
 
 
 
@@ -199,9 +216,9 @@ export default rootReducer;
 Store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import thunk from "redux-thunk";
-import rootReducer from "./Reducer";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
+import rootReducer from "./combineReducer";
 
 const persistConfig = {
   key: "auth",
@@ -221,8 +238,7 @@ export { store, persistor };
 
 
 
-
-action.ts
+Action.ts
 import axios from "axios";
 import { Dispatch } from "redux";
 import { AuthActionTypes, User } from "./types/authTypes";
@@ -252,40 +268,48 @@ export const login =
     }
   };
 
-export const getUserDetails =
-  () => async (dispatch: Dispatch, getState: any) => {
+export const getUser = () => async (dispatch: Dispatch, getState: any) => {
+  try {
+    const token = getState().LoginAuthReducer.token;
+    if (!token) {
+      throw new Error("Token not found");
+    }
+    const response = await axios.get(
+      `${process.env.REACT_APP_API}/api/getuser`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    dispatch({
+      type: AuthActionTypes.GET_USER_SUCCESS,
+      payload: response.data.user,
+    });
+  } catch (error) {
+    console.log(error);
+    dispatch({
+      type: AuthActionTypes.GET_USER_FAILURE,
+      payload: "Error fetching user data.",
+    });
+  }
+};
+
+export const updateUser =
+  (updatedUserData: User) => async (dispatch: Dispatch, getState: any) => {
     try {
       const token = getState().LoginAuthReducer.token;
       if (!token) {
         throw new Error("Token not found");
       }
-      const response = await axios.get(
-        `${process.env.REACT_APP_API}/api/getuser`,
+      await axios.put(
+        `${process.env.REACT_APP_API}/api/updateuser/${updatedUserData._id}`,
+        updatedUserData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
-      );
-      dispatch({
-        type: AuthActionTypes.GET_USER_SUCCESS,
-        payload: response.data.user,
-      });
-    } catch (error) {
-      console.log(error);
-      dispatch({
-        type: AuthActionTypes.GET_USER_FAILURE,
-        payload: "Error fetching user data.",
-      });
-    }
-  };
-
-export const updateLoggedInUser =
-  (updatedUserData: User) => async (dispatch: Dispatch) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API}/api/updateuser`,
-        updatedUserData
       );
       dispatch({
         type: AuthActionTypes.UPDATE_USER_SUCCESS,
@@ -303,7 +327,6 @@ export const updateLoggedInUser =
 export const logout = () => (dispatch: Dispatch) => {
   dispatch({ type: AuthActionTypes.LOGOUT });
 };
-
 
 
 
@@ -332,6 +355,160 @@ const ProtectedRoute = ({ children }: any) => {
 
 export default ProtectedRoute;
 
+
+
+
+Profile.tsx
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Typography, Container, Button } from "@mui/material";
+import { RootState } from "redux/combineReducer";
+import { getUser } from "redux/Action";
+import { useNavigate } from "react-router-dom";
+
+const Profile: React.FC = () => {
+  const user = useSelector((state: RootState) => state.UserReducer.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch<any>(getUser());
+  }, [dispatch]);
+
+  return (
+    <Container maxWidth="sm">
+      <Typography variant="h5" align="center" gutterBottom>
+        User Profile
+      </Typography>
+      {user ? (
+        <div>
+          <Typography variant="body1" gutterBottom>
+            <strong>First Name:</strong> {user.firstname}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            <strong>Last Name:</strong> {user.lastname}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            <strong>Email:</strong> {user.email}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            <strong>Phone:</strong> {user.phone}
+          </Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => navigate(`/profile/updateprofile/${user._id}`)}
+          >
+            Update Profile
+          </Button>
+        </div>
+      ) : (
+        <Typography variant="body1" align="center">
+          Loading...
+        </Typography>
+      )}
+    </Container>
+  );
+};
+
+export default Profile;
+
+
+
+
+ProfileUpdatePage.tsx
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Button, TextField, Typography, Container } from "@mui/material";
+import { User } from "redux/types/authTypes";
+import { RootState } from "redux/combineReducer";
+import { getUser, updateUser } from "redux/Action";
+import { useNavigate } from "react-router-dom";
+
+const UpdateProfile: React.FC = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.UserReducer.user);
+  const [formData, setFormData] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData(user);
+    } else {
+      dispatch<any>(getUser());
+    }
+  }, [dispatch, user]);
+
+  const handleUpdate = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (formData) {
+      dispatch<any>(updateUser(formData));
+      navigate("/profile");
+    }
+  };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (formData) {
+      setFormData({
+        ...formData,
+        [event.target.name]: event.target.value,
+      });
+    }
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Typography variant="h5" align="center" gutterBottom>
+        Update Profile
+      </Typography>
+      {formData ? (
+        <form onSubmit={handleUpdate}>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="First Name"
+            name="firstname"
+            value={formData.firstname}
+            onChange={handleChange}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Last Name"
+            name="lastname"
+            value={formData.lastname}
+            onChange={handleChange}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+          />
+          <Button variant="contained" color="primary" type="submit">
+            Update Profile
+          </Button>
+        </form>
+      ) : (
+        <Typography variant="body1" align="center">
+          Loading...
+        </Typography>
+      )}
+    </Container>
+  );
+};
+
+export default UpdateProfile;
 
 
 
@@ -483,114 +660,7 @@ export default LoginPage;
 
 
 
-
-ProfilePage.tsx
-import { Button, TextField, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getUserDetails, logout, updateLoggedInUser } from "redux/Action";
-import { User } from "redux/types/authTypes";
-import "../Profile/ProfilePage.css";
-
-const Profile: React.FC = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state: any) => state.UserLoggedInReducer.user);
-  const [userDataToUpdate, setUserDataToUpdate] = useState<User | null>(null);
-  const [updatedData, setUpdatedData] = useState<Partial<User>>({});
-
-  useEffect(() => {
-    dispatch<any>(getUserDetails());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (user) {
-      setUpdatedData(user);
-    }
-  }, [user]);
-
-  const handleUpdateUser = () => {
-    if (userDataToUpdate) {
-      const updatedUserData = { ...userDataToUpdate, ...updatedData };
-      dispatch<any>(updateLoggedInUser(updatedUserData));
-      setUserDataToUpdate(null);
-    }
-  };
-
-  const handleLogout = () => {
-    dispatch<any>(logout());
-  };
-
-  if (!user) {
-    return <div>Loading user data...</div>;
-  }
-
-  return (
-    <div>
-      <Typography variant="h4">Welcome, {user.firstname}!</Typography>
-      <TextField
-        label="First Name"
-        value={updatedData.firstname || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, firstname: e.target.value })
-        }
-      />
-      <TextField
-        label="Last Name"
-        value={updatedData.lastname || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, lastname: e.target.value })
-        }
-      />
-      <TextField
-        label="Phone"
-        value={updatedData.phone || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, phone: e.target.value })
-        }
-      />
-      <TextField
-        label="Email"
-        value={updatedData.email || ""}
-        onChange={(e: { target: { value: any } }) =>
-          setUpdatedData({ ...updatedData, email: e.target.value })
-        }
-      />
-      {userDataToUpdate ? (
-        <div>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleUpdateUser}
-          >
-            Save Changes
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => setUserDataToUpdate(null)}
-          >
-            Cancel
-          </Button>
-        </div>
-      ) : (
-        <Button variant="contained" onClick={() => setUserDataToUpdate(user)}>
-          Update User
-        </Button>
-      )}
-      <Button variant="contained" onClick={handleLogout}>
-        Logout
-      </Button>
-    </div>
-  );
-};
-
-export default Profile;
-
-
-
-
-
-DashboardPage.tsx
+Dashboard.tsx
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 import "../Dashboard/DashboardPage.css";
@@ -705,7 +775,6 @@ export default Dashboard;
 
 
 
-
 Loader.tsx
 import React from "react";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -718,7 +787,7 @@ const Loader = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
+        // height: "100vh",
       }}
     >
       <CircularProgress />
@@ -727,7 +796,6 @@ const Loader = () => {
 };
 
 export default Loader;
-
 
 
 
@@ -779,7 +847,6 @@ export default AuthConsumer;
 
 
 
-
 Layout.tsx
 import { Grid } from "@mui/material";
 import React, { useState } from "react";
@@ -812,7 +879,6 @@ const Layout = (): JSX.Element => {
 };
 
 export default Layout;
-
 
 
 
@@ -935,7 +1001,6 @@ export default Sidebar;
 
 
 
-
 Navbar.tsx
 import React, { useState } from "react";
 import { AppBar, Grid, Toolbar, Typography } from "@mui/material";
@@ -988,7 +1053,6 @@ export default Navbar;
 
 
 
-
 package.json
 "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -1031,50 +1095,7 @@ package.json
 
 
 
-
-
-  /*Back-end*/
-  middleware.js
-const jwt = require("jsonwebtoken");
-const authMiddleware = (req, res, next) => {
-     const token = req.headers.authorization;
-     if (!token) {
-          return res.status(401).send({ success: false, message: "Authorization Headers Missing" });
-     }
-     try {
-          const tokenWithoutBearer = token.replace('Bearer ', '');
-          const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
-          req.user = decoded.user;
-          next();
-     } catch (error) {
-          if (error.name === 'TokenExpiredError') {
-               return res.status(401).send({ success: false, message: 'Token has Expired' });
-          }
-          return res.status(401).send({ success: false, message: "Invalid Token" });
-     }
-};
-module.exports = authMiddleware;
-
-
-
-
-Schema.js
-const mongoose = require('mongoose')
-const User = new mongoose.Schema({
-     firstname: { type: String, required: true },
-     lastname: { type: String, required: true },
-     phone: { type: Number, required: true },
-     email: { type: String, required: true, unique: true },
-     password: { type: String, required: true },
-     role: { type: String }
-}, { timestamps: true })
-const model = new mongoose.model("Panel-Project", User)
-module.exports = model
-
-
-
-
-
+/*Back-End*/
 index.js
 const express = require('express');
 const app = express();
@@ -1209,10 +1230,10 @@ protectedRoute.get('/api/getuser', async (req, res) => {
 });
 
 // Update User
-protectedRoute.put('/api/updateuser', async (req, res) => {
+protectedRoute.put('/api/updateuser/:id', async (req, res) => {
      try {
           // Get the user ID from req.user
-          const userId = req.user._id;
+          const userId = req.params.id;
           // Find the user by ID
           const user = await User.findById(userId);
           if (!user) {
@@ -1241,6 +1262,44 @@ protectedRoute.put('/api/updateuser', async (req, res) => {
      }
 });
 app.use(protectedRoute);
+
+
+
+Schema.js
+const mongoose = require('mongoose')
+const User = new mongoose.Schema({
+     firstname: { type: String, required: true },
+     lastname: { type: String, required: true },
+     phone: { type: Number, required: true },
+     email: { type: String, required: true, unique: true },
+     password: { type: String, required: true },
+     role: { type: String }
+}, { timestamps: true })
+const model = new mongoose.model("Panel-Project", User)
+module.exports = model
+
+
+
+middleware.js
+const jwt = require("jsonwebtoken");
+const authMiddleware = (req, res, next) => {
+     const token = req.headers.authorization;
+     if (!token) {
+          return res.status(401).send({ success: false, message: "Authorization Headers Missing" });
+     }
+     try {
+          const tokenWithoutBearer = token.replace('Bearer ', '');
+          const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
+          req.user = decoded.user;
+          next();
+     } catch (error) {
+          if (error.name === 'TokenExpiredError') {
+               return res.status(401).send({ success: false, message: 'Token has Expired' });
+          }
+          return res.status(401).send({ success: false, message: "Invalid Token" });
+     }
+};
+module.exports = authMiddleware;
 
 
 
