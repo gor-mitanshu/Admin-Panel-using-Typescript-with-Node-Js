@@ -7,7 +7,7 @@ import jwtDecode from "jwt-decode";
 
 interface NavbarProps {
   decodeToken?: {};
-  user?: {
+  user: {
     firstname: string;
     lastname: string;
     role: string;
@@ -15,9 +15,9 @@ interface NavbarProps {
 }
 const Navbar = ({ toogleSidebar }: any): JSX.Element => {
   const token = useSelector((state: any) => state.LoginAuthReducer.token);
-  const decodeToken: NavbarProps = token ? jwtDecode(token) : {};
-  const name = decodeToken.user?.firstname + " " + decodeToken.user?.lastname;
-  const role = decodeToken.user?.role;
+  const decodeToken: NavbarProps = jwtDecode(token);
+  const name = decodeToken.user.firstname + " " + decodeToken.user.lastname;
+  const role = decodeToken.user.role;
 
   const [isOpen, setOpen] = useState<boolean>(false);
   const toogleSiderbar = () => {
@@ -33,7 +33,7 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
             <Grid className="navbar-name-content-center">
               <Typography className="navbar-title">Panel</Typography>
               <Typography className="navbar-name">
-                <span className="loggedInRole">{role?.toUpperCase()}:</span>
+                <span className="loggedInRole">{role.toUpperCase()}:</span>
                 <span className="loggedInName"> {name.toUpperCase()}</span>
               </Typography>
             </Grid>
