@@ -2,8 +2,8 @@ import React, { ReactNode, createContext, useContext, useState } from "react";
 
 interface AuthContextType {
   authed: boolean;
-  loginHandle: () => Promise<void>;
-  logoutHandle: () => Promise<void>;
+  loginHandle: () => void;
+  logoutHandle: () => void;
 }
 
 const authContext = createContext<AuthContextType | null>(null);
