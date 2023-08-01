@@ -4,9 +4,10 @@ import { Typography, Container, Button } from "@mui/material";
 import { RootState } from "redux/combineReducer";
 import { getUser } from "redux/Action";
 import { useNavigate } from "react-router-dom";
+import "./ProfilePage.css";
 
 const Profile: React.FC = () => {
-  const user = useSelector((state: RootState) => state.UserReducer.user);
+  const profile = useSelector((state: RootState) => state.UserReducer.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -15,28 +16,33 @@ const Profile: React.FC = () => {
   }, [dispatch]);
 
   return (
-    <Container maxWidth="sm">
-      <Typography variant="h5" align="center" gutterBottom>
+    <Container maxWidth="md">
+      <Typography
+        // variant="h4"
+        // align="center"
+        className="profile-title"
+      >
         User Profile
       </Typography>
-      {user ? (
+      {profile ? (
         <div>
           <Typography variant="body1" gutterBottom>
-            <strong>First Name:</strong> {user.firstname}
+            <span className="label">First Name:</span> {profile.firstname}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <strong>Last Name:</strong> {user.lastname}
+            <span className="label">Last Name:</span> {profile.lastname}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <strong>Email:</strong> {user.email}
+            <span className="label">Email:</span> {profile.email}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <strong>Phone:</strong> {user.phone}
+            <span className="label">Phone:</span> {profile.phone}
           </Typography>
           <Button
-            variant="outlined"
+            variant="contained"
             color="primary"
-            onClick={() => navigate(`/profile/updateprofile/${user._id}`)}
+            style={{ marginTop: "5px !important" }}
+            onClick={() => navigate(`/profile/updateprofile/${profile._id}`)}
           >
             Update Profile
           </Button>

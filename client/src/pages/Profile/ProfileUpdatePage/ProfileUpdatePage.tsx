@@ -5,12 +5,14 @@ import { User } from "redux/types/authTypes";
 import { RootState } from "redux/combineReducer";
 import { getUser, updateUser } from "redux/Action";
 import { useNavigate } from "react-router-dom";
+import "./ProfileUpdatePage.css";
 
 const UpdateProfile: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.UserReducer.user);
   const [formData, setFormData] = useState<User | null>(null);
+  const [isDataChanged, setIsDataChanged] = useState<boolean>(false);
 
   useEffect(() => {
     if (user) {
@@ -34,14 +36,13 @@ const UpdateProfile: React.FC = () => {
         ...formData,
         [event.target.name]: event.target.value,
       });
+      setIsDataChanged(true);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Typography variant="h5" align="center" gutterBottom>
-        Update Profile
-      </Typography>
+    <Container maxWidth="md">
+      <Typography className="title">Update Profile</Typography>
       {formData ? (
         <form onSubmit={handleUpdate}>
           <TextField
@@ -76,7 +77,22 @@ const UpdateProfile: React.FC = () => {
             value={formData.phone}
             onChange={handleChange}
           />
-          <Button variant="contained" color="primary" type="submit">
+          <Button
+            variant="contained"
+            color="error"
+            type="button"
+            sx={{ marginRight: "8px" }}
+            disabled={isDataChanged}
+            onClick={() => navigate("/profile")}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={!isDataChanged}
+          >
             Update Profile
           </Button>
         </form>

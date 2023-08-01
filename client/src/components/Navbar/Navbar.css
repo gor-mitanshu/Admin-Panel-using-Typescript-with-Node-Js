@@ -42,8 +42,11 @@
   padding: 6px !important;
 }
 .loggedInName {
+  filter: contrast(170%) brightness(120%) blur(0px)
+    drop-shadow(8px 8px 10px gray) hue-rotate(0deg) !important;
   color: brown !important;
   /* color: #ff4382 !important; */
+  /* mix-blend-mode: darken; */
 }
 .loggedInRole {
   color: black !important;
