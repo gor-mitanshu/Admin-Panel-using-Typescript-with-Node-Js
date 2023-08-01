@@ -12,15 +12,29 @@ const UpdateProfile: React.FC = () => {
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.UserReducer.user);
   const [formData, setFormData] = useState<User | null>(null);
+  const [initialFormData, setInitialFormData] = useState<User | null>(null);
   const [isDataChanged, setIsDataChanged] = useState<boolean>(false);
 
   useEffect(() => {
     if (user) {
       setFormData(user);
+      setInitialFormData(user);
     } else {
       dispatch<any>(getUser());
     }
   }, [dispatch, user]);
+
+  useEffect(() => {
+    if (formData && initialFormData) {
+      const isChanged =
+        formData.firstname !== initialFormData.firstname ||
+        formData.lastname !== initialFormData.lastname ||
+        formData.email !== initialFormData.email ||
+        formData.phone !== initialFormData.phone;
+
+      setIsDataChanged(isChanged);
+    }
+  }, [formData, initialFormData]);
 
   const handleUpdate = (event: React.FormEvent) => {
     event.preventDefault();
@@ -82,7 +96,7 @@ const UpdateProfile: React.FC = () => {
             color="error"
             type="button"
             sx={{ marginRight: "8px" }}
-            disabled={isDataChanged}
+            // disabled={isDataChanged}
             onClick={() => navigate("/profile")}
           >
             Cancel
