@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
 }
-.label::selection {
+/* .label::selection {
   background-color: green !important;
 }
 .label-info::selection {
@@ -20,4 +20,4 @@
 }
 .loggedInName::selection {
   background-color: darkblue !important;
-}
+} */
