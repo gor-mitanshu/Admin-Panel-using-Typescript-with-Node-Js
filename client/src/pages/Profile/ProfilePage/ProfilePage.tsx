@@ -30,14 +30,15 @@ const Profile: React.FC = () => {
         );
         if (response.data.success === true && response.status === 200) {
           setProfile(response.data.user);
-        } else {
-          console.log("Error Fetching Data");
         }
+        // else {
+        //   console.log("Error Fetching Data");
+        // }
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         if (isAxiosError(error)) {
           if (error.response?.status === 401) {
-            console.log("UnAuthorized User Profile Page");
+            // console.log("UnAuthorized User Profile Page");
             dispatch({ type: AuthActionTypes.LOGOUT });
             navigate("/login");
           }

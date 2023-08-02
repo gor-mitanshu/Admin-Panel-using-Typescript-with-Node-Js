@@ -34,13 +34,14 @@ const UpdateProfile: React.FC = () => {
           const user = response.data.user;
           setFormData(user);
           setInitialFormData(user);
-        } else {
-          console.log("Error fetching user data.");
         }
+        //  else {
+        //   console.log("Error fetching user data.");
+        // }
       } catch (error: any) {
-        console.log(error);
+        // console.log(error);
         if (error.response?.status === 401) {
-          console.log("Mitanshu Unauthorized ProfileUpdate");
+          // console.log("Mitanshu Unauthorized ProfileUpdate");
           dispatch({ type: AuthActionTypes.LOGOUT });
           navigate("/login");
         }
@@ -78,13 +79,14 @@ const UpdateProfile: React.FC = () => {
           }
         );
         navigate("/profile");
-      } else {
-        console.log("formData is null");
       }
+      //  else {
+      //   console.log("formData is null");
+      // }
     } catch (error: any) {
-      console.log(error);
+      // console.log(error);
       if (error.response?.status === 401) {
-        console.log("Mitanshu Unauthorized ProfileUpdate state");
+        // console.log("Mitanshu Unauthorized ProfileUpdate state");
         dispatch({ type: AuthActionTypes.LOGOUT });
         navigate("/login");
       }

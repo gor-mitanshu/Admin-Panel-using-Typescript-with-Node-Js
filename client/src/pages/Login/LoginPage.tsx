@@ -61,7 +61,6 @@ const LoginPage = (): JSX.Element => {
       setEmail("");
       setPassword("");
     } catch (error: any) {
-      console.log(error);
       showErrorWithTimeout(error.response.data.message, 4000);
     }
   };

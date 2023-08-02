@@ -22,7 +22,7 @@ export const login =
       dispatch({ type: AuthActionTypes.LOGIN_SUCCESS, payload: token });
       return response;
     } catch (error: any) {
-      console.log(error);
+      // console.log(error);
       dispatch({
         type: AuthActionTypes.LOGIN_FAILURE,
         payload: error.response.data.message,
