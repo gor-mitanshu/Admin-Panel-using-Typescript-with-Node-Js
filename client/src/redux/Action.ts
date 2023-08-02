@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { Dispatch } from "redux";
 import { AuthActionTypes, User } from "./types/authTypes";
 import api from "utils/api";
@@ -49,13 +49,22 @@ export const getUser = () => async (dispatch: Dispatch, getState: any) => {
         type: AuthActionTypes.GET_USER_SUCCESS,
         payload: response.data.user,
       });
+    } else {
+      dispatch({
+        type: AuthActionTypes.GET_USER_FAILURE,
+        payload: "Error fetching user data.",
+      });
     }
   } catch (error) {
+    if (isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        dispatch({ type: AuthActionTypes.LOGOUT });
+        console.log(error, "Mitanshu Unauthorized");
+      } else {
+        console.log("Axios Other error" + error.message);
+      }
+    }
     console.log(error);
-    dispatch({
-      type: AuthActionTypes.GET_USER_FAILURE,
-      payload: "Error fetching user data.",
-    });
   }
 };
 
@@ -81,10 +90,13 @@ export const updateUser =
       });
     } catch (error) {
       console.log(error);
-      dispatch({
-        type: AuthActionTypes.UPDATE_USER_FAILURE,
-        payload: "Error updating user data.",
-      });
+      if (isAxiosError(error)) {
+        console.log(error);
+        dispatch({
+          type: AuthActionTypes.UPDATE_USER_FAILURE,
+          payload: "Error updating user data.",
+        });
+      }
     }
   };
 
