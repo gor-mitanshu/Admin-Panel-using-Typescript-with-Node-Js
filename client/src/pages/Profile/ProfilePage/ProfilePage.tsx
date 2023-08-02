@@ -1,19 +1,51 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Typography, Container, Button } from "@mui/material";
 import { RootState } from "redux/combineReducer";
-import { getUser } from "redux/Action";
 import { useNavigate } from "react-router-dom";
 import "./ProfilePage.css";
+import api from "utils/api";
+import { isAxiosError } from "axios";
+import { AuthActionTypes } from "redux/types/authTypes";
 
 const Profile: React.FC = () => {
-  const profile = useSelector((state: RootState) => state.UserReducer.user);
+  const token = useSelector((state: RootState) => state.LoginAuthReducer.token);
+  const [profile, setProfile] = useState<any | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch<any>(getUser());
-  }, [dispatch]);
+    const fetchUserProfile = async () => {
+      try {
+        if (!token) {
+          throw new Error("Token Not Found");
+        }
+        const response = await api.get(
+          `${process.env.REACT_APP_API}/api/getuser`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.data.success === true && response.status === 200) {
+          setProfile(response.data.user);
+        } else {
+          console.log("Error Fetching Data");
+        }
+      } catch (error) {
+        console.log(error);
+        if (isAxiosError(error)) {
+          if (error.response?.status === 401) {
+            console.log("UnAuthorized User Profile Page");
+            dispatch({ type: AuthActionTypes.LOGOUT });
+            navigate("/login");
+          }
+        }
+      }
+    };
+    fetchUserProfile();
+  }, [dispatch, navigate, token]);
 
   return (
     <Container maxWidth="md">
