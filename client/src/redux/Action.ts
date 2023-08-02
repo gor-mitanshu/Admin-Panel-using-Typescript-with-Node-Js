@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Dispatch } from "redux";
 import { AuthActionTypes, User } from "./types/authTypes";
+import api from "utils/api";
 
 interface LoginRequestPayload {
   email: string;
@@ -33,18 +34,22 @@ export const getUser = () => async (dispatch: Dispatch, getState: any) => {
     if (!token) {
       throw new Error("Token not found");
     }
-    const response = await axios.get(
-      `${process.env.REACT_APP_API}/api/getuser`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    dispatch({
-      type: AuthActionTypes.GET_USER_SUCCESS,
-      payload: response.data.user,
+    const response = await api.get(`${process.env.REACT_APP_API}/api/getuser`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
+    console.log(response);
+    if (
+      !!response &&
+      !!response.data.success === true &&
+      response.status === 200
+    ) {
+      dispatch({
+        type: AuthActionTypes.GET_USER_SUCCESS,
+        payload: response.data.user,
+      });
+    }
   } catch (error) {
     console.log(error);
     dispatch({
@@ -61,7 +66,7 @@ export const updateUser =
       if (!token) {
         throw new Error("Token not found");
       }
-      await axios.put(
+      await api.put(
         `${process.env.REACT_APP_API}/api/updateuser/${updatedUserData._id}`,
         updatedUserData,
         {

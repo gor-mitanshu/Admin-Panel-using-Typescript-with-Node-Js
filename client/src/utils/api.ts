@@ -9,16 +9,10 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (
-      error.response &&
-      (error.response.status === 401 ||
-        error.response.data.message === "Token has Expired" ||
-        error.response.data.message === "Invalid token specified" ||
-        error.message === "Invalid token specified" ||
-        error.response.data.message === "InvalidTokenError")
-    ) {
+    if (error.response && error.response.status === 401) {
       store.dispatch<any>(logout());
     }
+    return Promise.reject(error);
   }
 );
 

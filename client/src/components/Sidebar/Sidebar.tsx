@@ -23,8 +23,8 @@ const Sidebar = (): JSX.Element => {
   const dispatch = useDispatch();
   const { logoutHandle }: any = useAuth();
 
-  const handleLogout = () => {
-    dispatch<any>(logout());
+  const handleLogout = async () => {
+    await dispatch<any>(logout());
     logoutHandle();
     navigate("/login");
   };

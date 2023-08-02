@@ -8,7 +8,7 @@ export const enum AuthActionTypes {
   UPDATE_USER_FAILURE = "UPDATE_USER_FAILURE",
 }
 export interface User {
-  _id?: string; // Change the type of _id from number to string since it's commonly represented as a string in MongoDB.
+  _id?: string;
   firstname: string;
   lastname: string;
   phone: string;
