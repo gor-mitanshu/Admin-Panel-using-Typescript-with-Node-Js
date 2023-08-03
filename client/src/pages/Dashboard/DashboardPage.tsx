@@ -1,6 +1,7 @@
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 import "../Dashboard/DashboardPage.css";
+import Chart from "./Chart/Chart";
 
 const Dashboard = (): JSX.Element => {
   return (
@@ -101,6 +102,13 @@ const Dashboard = (): JSX.Element => {
               </CardContent>
             </Box>
           </Card>
+        </Grid>
+
+        <Grid item lg={6} xs={12}>
+          <Chart />
+        </Grid>
+        <Grid item lg={6} xs={12}>
+          <Chart />
         </Grid>
       </Grid>
     </>
