@@ -30,6 +30,7 @@
     "echarts": "^5.4.3",
     "echarts-for-react": "^3.0.2",
     "jwt-decode": "^3.1.2",
+    "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.1.1",
@@ -66,5 +67,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "json-server": "^0.17.3"
   }
 }

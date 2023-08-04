@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../Dashboard/DashboardPage.css";
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
-import { BarChartOne, BarChartTwo, PieChart } from "./Chart/Chart";
+import { BarChartMonth, PieChart } from "./Chart/Chart";
+import axios from "axios";
 
 const Dashboard = (): JSX.Element => {
+  const [monthData, setMonthData] = useState(null);
+  const [previousMonthData, setPreviousMonthData] = useState(null);
+
+  useEffect(() => {
+    // Fetch data for the current month (August)
+    axios.get("http://localhost:7474/monthdata").then((response) => {
+      const data = response.data[0];
+      setMonthData(data.August);
+    });
+
+    // Fetch data for the previous month (July)
+    axios.get("http://localhost:7474/monthdata").then((response) => {
+      const data = response.data[0];
+      setPreviousMonthData(data.July);
+    });
+  }, []);
+
   return (
     <>
       <Grid container padding={2} spacing={1}>
@@ -104,15 +122,19 @@ const Dashboard = (): JSX.Element => {
           </Card>
         </Grid>
 
-        <Grid item lg={6} xs={12}>
-          <BarChartOne />
-        </Grid>
-        <Grid item lg={6} xs={12}>
-          <BarChartTwo />
-        </Grid>
-        <Grid item lg={6} xs={12}>
-          <PieChart />
-        </Grid>
+        {monthData && previousMonthData && (
+          <>
+            <Grid item lg={6} xs={12}>
+              <BarChartMonth data={previousMonthData} title="July" />
+            </Grid>
+            <Grid item lg={6} xs={12}>
+              <BarChartMonth data={monthData} title="August" />
+            </Grid>
+            <Grid item lg={6} xs={12}>
+              <PieChart data={monthData} />
+            </Grid>
+          </>
+        )}
       </Grid>
     </>
   );

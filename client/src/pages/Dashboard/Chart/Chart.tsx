@@ -1,26 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactEcharts from "echarts-for-react";
 import { Card } from "@mui/material";
+import "../DashboardPage.css";
+import moment from "moment";
 
-export const BarChartOne = () => {
+export const BarChartMonth = ({ data, title }: any) => {
+  const [chartData, setChartData] = useState([]);
+  const month = moment(title, "MMMM").format("MMM");
+  console.log(Object.keys(data).map((day) => moment(day, "D").format("MMM D")));
+
+  useEffect(() => {
+    if (data) {
+      const formattedData: any = Object.keys(data).map((day) => data[day]);
+      setChartData(formattedData);
+    }
+  }, [data]);
+
   const option = {
     title: {
-      text: "Weekly Data",
-      subtext: "July 2023",
-      center: "",
+      text: `Weekly Data - ${month}`,
+      // subtext: moment().format("MMM YYYY"),
+      left: "left",
     },
     xAxis: {
       type: "category",
-      data: [
-        "July 1",
-        "July 2",
-        "July 3",
-        "July 4",
-        "July 5",
-        "July 6",
-        "July 7",
-      ],
-      stack: "x",
+      data: Object.keys(data).map((day) => moment(day, "D").format("MMM D")),
     },
     yAxis: {
       type: "value",
@@ -29,15 +33,7 @@ export const BarChartOne = () => {
       {
         name: "Data",
         bottom: "left",
-        data: [
-          Math.floor(Math.random() * (120 - 60) + 60),
-          Math.floor(Math.random() * (120 - 60) + 60),
-          Math.floor(Math.random() * (120 - 60) + 60),
-          Math.floor(Math.random() * (120 - 60) + 60),
-          Math.floor(Math.random() * (120 - 60) + 60),
-          Math.floor(Math.random() * (120 - 60) + 60),
-          Math.floor(Math.random() * (120 - 60) + 60),
-        ],
+        data: chartData,
         type: "bar",
         stack: "x",
         showBackground: true,
@@ -57,8 +53,8 @@ export const BarChartOne = () => {
     },
     responsive: true,
     maintainAspectRatio: false,
-    //     color: ["#ff7070"],
   };
+
   return (
     <>
       <Card
@@ -67,6 +63,8 @@ export const BarChartOne = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginTop: "20px",
+          backgroundColor: "#f6f1f1",
+          border: "1px solid #ded3d3",
         }}
       >
         <ReactEcharts
@@ -78,103 +76,32 @@ export const BarChartOne = () => {
   );
 };
 
-export const BarChartTwo = () => {
-  const option = {
-    title: {
-      text: "Weekly Data",
-      subtext: "Aug 2023",
-      center: "",
-    },
-    xAxis: {
-      type: "category",
-      data: ["Aug 1", "Aug 2", "Aug 3", "Aug 4", "Aug 5", "Aug 6", "Aug 7"],
-      stack: "x",
-    },
-    yAxis: {
-      type: "value",
-    },
-    series: [
-      {
-        name: "Data",
-        bottom: "left",
-        data: [
-          Math.floor(Math.random() * (140 - 70) + 70),
-          Math.floor(Math.random() * (140 - 70) + 70),
-          Math.floor(Math.random() * (140 - 70) + 70),
-          Math.floor(Math.random() * (140 - 70) + 70),
-          Math.floor(Math.random() * (140 - 70) + 70),
-          Math.floor(Math.random() * (140 - 70) + 70),
-          Math.floor(Math.random() * (140 - 70) + 70),
-        ],
-        type: "bar",
-        stack: "x",
-        showBackground: true,
-        backgroundStyle: {
-          color: "rgba(180, 180, 180, 0.2)",
-        },
-      },
-    ],
-    tooltip: {
-      trigger: "axis",
-    },
-    legend: {
-      data: ["Data"],
-    },
-    grid: {
-      containLabel: true,
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-    //     color: ["#ff7070"],
-  };
-  return (
-    <>
-      <Card
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "20px",
-        }}
-      >
-        <ReactEcharts
-          option={option}
-          style={{ height: "65vh", width: "100%" }}
-        />
-      </Card>
-    </>
-  );
-};
-
-export const PieChart = () => {
+export const PieChart = ({ data }: any) => {
   const option = {
     series: [
       {
         type: "pie",
         stillShowZeroSum: true,
         symbolSize: 1,
-
         label: {
           show: true,
         },
         data: [
           {
-            value: Math.random(),
-            name: "Month",
+            value: data?.July ? Object.keys(data.July).length : Math.random(),
+            name: "July",
           },
           {
-            value: Math.random(),
-            name: "Day",
-          },
-          {
-            value: Math.random(),
-            name: "Year",
+            value: data?.August
+              ? Object.keys(data.August).length
+              : Math.random(),
+            name: "August",
           },
         ],
-        //    radius: "50%",
       },
     ],
   };
+
   return (
     <>
       <Card
@@ -182,6 +109,8 @@ export const PieChart = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          backgroundColor: "#f6f1f1",
+          border: "1px solid #ded3d3",
         }}
       >
         <ReactEcharts
