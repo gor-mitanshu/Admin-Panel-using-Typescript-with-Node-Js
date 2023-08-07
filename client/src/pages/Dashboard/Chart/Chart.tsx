@@ -1,6 +1,8 @@
 import { Card } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ReactEcharts from "echarts-for-react";
+import * as echarts from "echarts"; // Import the echarts library
+import axios from "axios";
 
 export const CurretWeekChart = () => {
   const [currentWeekDates, setCurrentWeekDates] = useState<string[]>([]);
@@ -86,6 +88,7 @@ export const CurretWeekChart = () => {
     </div>
   );
 };
+
 export const LastWeekChart = () => {
   const [lastWeekDates, setLastWeekDates] = useState<string[]>([]);
 
@@ -136,6 +139,20 @@ export const LastWeekChart = () => {
         backgroundStyle: {
           color: "rgba(180, 180, 180, 0.2)",
         },
+        emphasis: {
+          // Use `label` to display the highest value on the bar
+          label: {
+            show: true,
+            position: "top",
+          },
+        },
+        itemStyle: {
+          // Use `color` to highlight the highest value bar with a different color
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#2378f7" }, // Start color
+            { offset: 1, color: "#83bff6" }, // End color
+          ]),
+        },
       },
     ],
     tooltip: {
@@ -160,6 +177,98 @@ export const LastWeekChart = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginTop: "20px",
+        }}
+      >
+        <ReactEcharts
+          option={option}
+          style={{ height: "65vh", width: "100%" }}
+        />
+      </Card>
+    </div>
+  );
+};
+
+export const PieChart = () => {
+  const [studentChartData, setStudentChartData] = useState<any>([]);
+
+  const categories = [
+    "first_class",
+    "second_class",
+    "third_class",
+    "fail",
+    "distinction",
+  ];
+  const PieChartStudentData = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_JSON}`);
+      const students = response.data;
+      const totalResultCounts: { [key: string]: number } = {};
+
+      categories.forEach((category) => {
+        totalResultCounts[category] = 0;
+      });
+
+      students.forEach((student: any) => {
+        if (categories.includes(student.result)) {
+          totalResultCounts[student.result]++;
+        }
+      });
+
+      setStudentChartData(totalResultCounts);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(() => {
+    PieChartStudentData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const option = {
+    title: {
+      text: "Students Record",
+      subtext: "Students",
+      bottom: "bottom",
+    },
+    series: [
+      {
+        data: categories.map((category: any) => ({
+          value: studentChartData[category],
+          name: category.replace("_", " ").toUpperCase(),
+        })),
+        type: "pie",
+        name: "Student Data",
+        bottom: "left",
+        stack: "x",
+        showBackground: true,
+        backgroundStyle: {
+          color: "rgba(180, 180, 180, 0.2)",
+        },
+      },
+    ],
+    tooltip: {
+      trigger: "item",
+    },
+    legend: {
+      data: categories.map((category) =>
+        category.replace("_", " ").toUpperCase()
+      ),
+    },
+    grid: {
+      containLabel: true,
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  };
+
+  return (
+    <div>
+      <Card
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
         <ReactEcharts
