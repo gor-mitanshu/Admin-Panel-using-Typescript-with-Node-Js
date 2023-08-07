@@ -52,7 +52,6 @@ const Profile: React.FC = () => {
   return (
     <Container maxWidth="md">
       <Typography
-        // variant="h4"
         // align="center"
         className="profile-title"
       >
