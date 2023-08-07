@@ -1,30 +1,54 @@
-import React, { useEffect, useState } from "react";
-import ReactEcharts from "echarts-for-react";
 import { Card } from "@mui/material";
-import "../DashboardPage.css";
-import moment from "moment";
+import React, { useState, useEffect } from "react";
+import ReactEcharts from "echarts-for-react";
 
-export const BarChartMonth = ({ data, title }: any) => {
-  const [chartData, setChartData] = useState([]);
-  const month = moment(title, "MMMM").format("MMM");
-  console.log(Object.keys(data).map((day) => moment(day, "D").format("MMM D")));
+const Chart = () => {
+  const [currentWeekDates, setCurrentWeekDates] = useState<string[]>([]);
+  const [data, setData] = useState<number[]>([]);
 
   useEffect(() => {
-    if (data) {
-      const formattedData: any = Object.keys(data).map((day) => data[day]);
-      setChartData(formattedData);
+    const weekDates = getCurrentWeekDates();
+    setCurrentWeekDates(weekDates);
+
+    // Simulate dynamic data change
+    const interval = setInterval(() => {
+      const newData: number[] = [];
+      for (let i = 0; i < 7; i++) {
+        newData.push(Math.floor(Math.random() * 1000)); // Random data for the chart
+      }
+      setData(newData);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getCurrentWeekDates = (): string[] => {
+    const currentDate = new Date();
+    const currentDayOfWeek = currentDate.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+    const firstDayOfWeek = new Date(currentDate);
+    firstDayOfWeek.setDate(currentDate.getDate() - currentDayOfWeek);
+
+    const weekDates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(firstDayOfWeek);
+      date.setDate(firstDayOfWeek.getDate() + i);
+      const formattedDate = date.toISOString().slice(0, 10);
+      weekDates.push(formattedDate);
     }
-  }, [data]);
+
+    return weekDates;
+  };
 
   const option = {
     title: {
-      text: `Weekly Data - ${month}`,
-      // subtext: moment().format("MMM YYYY"),
-      left: "left",
+      text: "Weekly Data",
+      subtext: "Aug 2023",
+      center: "",
     },
     xAxis: {
       type: "category",
-      data: Object.keys(data).map((day) => moment(day, "D").format("MMM D")),
+      data: currentWeekDates,
+      stack: "x",
     },
     yAxis: {
       type: "value",
@@ -33,7 +57,7 @@ export const BarChartMonth = ({ data, title }: any) => {
       {
         name: "Data",
         bottom: "left",
-        data: chartData,
+        data: data,
         type: "bar",
         stack: "x",
         showBackground: true,
@@ -53,18 +77,23 @@ export const BarChartMonth = ({ data, title }: any) => {
     },
     responsive: true,
     maintainAspectRatio: false,
+    //     color: ["#ff7070"],
   };
 
   return (
-    <>
+    <div>
+      <h2>Current Week's Dates:</h2>
+      <ul>
+        {currentWeekDates.map((date) => (
+          <li key={date}>{date}</li>
+        ))}
+      </ul>
       <Card
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           marginTop: "20px",
-          backgroundColor: "#f6f1f1",
-          border: "1px solid #ded3d3",
         }}
       >
         <ReactEcharts
@@ -72,52 +101,8 @@ export const BarChartMonth = ({ data, title }: any) => {
           style={{ height: "65vh", width: "100%" }}
         />
       </Card>
-    </>
+    </div>
   );
 };
 
-export const PieChart = ({ data }: any) => {
-  const option = {
-    series: [
-      {
-        type: "pie",
-        stillShowZeroSum: true,
-        symbolSize: 1,
-        label: {
-          show: true,
-        },
-        data: [
-          {
-            value: data?.July ? Object.keys(data.July).length : Math.random(),
-            name: "July",
-          },
-          {
-            value: data?.August
-              ? Object.keys(data.August).length
-              : Math.random(),
-            name: "August",
-          },
-        ],
-      },
-    ],
-  };
-
-  return (
-    <>
-      <Card
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          backgroundColor: "#f6f1f1",
-          border: "1px solid #ded3d3",
-        }}
-      >
-        <ReactEcharts
-          option={option}
-          style={{ height: "65vh", width: "100%" }}
-        />
-      </Card>
-    </>
-  );
-};
+export default Chart;
