@@ -7,6 +7,7 @@ import "./ProfilePage.css";
 import api from "utils/api";
 import { isAxiosError } from "axios";
 import { AuthActionTypes } from "redux/types/authTypes";
+import Loader from "loader/Loader";
 
 const Profile: React.FC = () => {
   const token = useSelector((state: RootState) => state.LoginAuthReducer.token);
@@ -85,9 +86,7 @@ const Profile: React.FC = () => {
           </Button>
         </div>
       ) : (
-        <Typography variant="body1" align="center">
-          Loading...
-        </Typography>
+        <Loader />
       )}
     </Container>
   );

@@ -4,22 +4,10 @@ import ReactEcharts from "echarts-for-react";
 
 export const CurretWeekChart = () => {
   const [currentWeekDates, setCurrentWeekDates] = useState<string[]>([]);
-  // const [data, setData] = useState<number[]>([]);
 
   useEffect(() => {
     const currentweekDates = getCurrentWeekDates();
     setCurrentWeekDates(currentweekDates);
-
-    // Simulate dynamic data change in the chart
-    // const interval = setInterval(() => {
-    //   const newData: number[] = [];
-    //   for (let i = 0; i < 7; i++) {
-    //     newData.push(Math.floor(Math.random() * 1000)); // Random data for the chart
-    //   }
-    //   setData(newData);
-    // }, 3000);
-
-    // return () => clearInterval(interval);
   }, []);
 
   // function to get the week data
@@ -82,12 +70,6 @@ export const CurretWeekChart = () => {
 
   return (
     <div>
-      {/* <h2>Current Week's</h2> */}
-      {/* <ul>
-        {currentWeekDates.map((date) => (
-          <li key={date}>{date}</li>
-        ))}
-      </ul> */}
       <Card
         sx={{
           display: "flex",
@@ -106,22 +88,10 @@ export const CurretWeekChart = () => {
 };
 export const LastWeekChart = () => {
   const [lastWeekDates, setLastWeekDates] = useState<string[]>([]);
-  // const [data, setData] = useState<number[]>([]);
 
   useEffect(() => {
     const lastweekDates = getlastWeekDates();
     setLastWeekDates(lastweekDates);
-
-    // Simulate dynamic data change in the chart
-    // const interval = setInterval(() => {
-    //   const newData: number[] = [];
-    //   for (let i = 0; i < 7; i++) {
-    //     newData.push(Math.floor(Math.random() * 1000)); // Random data for the chart
-    //   }
-    //   setData(newData);
-    // }, 3000);
-
-    // return () => clearInterval(interval);
   }, []);
 
   // Function to get last week data
@@ -184,12 +154,6 @@ export const LastWeekChart = () => {
 
   return (
     <div>
-      {/* <h2>Last Week's</h2> */}
-      {/* <ul>
-        {lastWeekDates.map((date) => (
-          <li key={date}>{date}</li>
-        ))}
-      </ul> */}
       <Card
         sx={{
           display: "flex",

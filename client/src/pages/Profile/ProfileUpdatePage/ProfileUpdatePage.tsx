@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import "./ProfileUpdatePage.css";
 import { RootState } from "redux/combineReducer";
 import api from "utils/api";
+import Loader from "loader/Loader";
 
 const UpdateProfile: React.FC = () => {
   const dispatch = useDispatch();
@@ -160,9 +161,7 @@ const UpdateProfile: React.FC = () => {
           </Button>
         </form>
       ) : (
-        <Typography variant="body1" align="center">
-          Loading...
-        </Typography>
+        <Loader />
       )}
     </Container>
   );
