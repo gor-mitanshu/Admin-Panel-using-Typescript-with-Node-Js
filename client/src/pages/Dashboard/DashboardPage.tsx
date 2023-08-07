@@ -1,8 +1,7 @@
 import React from "react";
 import "../Dashboard/DashboardPage.css";
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
-import Chart from "./Chart/Chart";
-// import { BarChartOne, BarChartTwo, PieChart } from "./Chart/Chart";
+import { CurretWeekChart, LastWeekChart } from "./Chart/Chart";
 
 const Dashboard = (): JSX.Element => {
   return (
@@ -105,16 +104,16 @@ const Dashboard = (): JSX.Element => {
           </Card>
         </Grid>
 
-        <Grid item lg={6} xs={12}>
+        {/* <Grid item lg={6} xs={12}>
           <Chart />
+        </Grid> */}
+        <Grid item lg={6} xs={12}>
+          <CurretWeekChart />
+        </Grid>
+        <Grid item lg={6} xs={12}>
+          <LastWeekChart />
         </Grid>
         {/* <Grid item lg={6} xs={12}>
-          <BarChartOne />
-        </Grid>
-        <Grid item lg={6} xs={12}>
-          <BarChartTwo />
-        </Grid>
-        <Grid item lg={6} xs={12}>
           <PieChart />
         </Grid> */}
       </Grid>
