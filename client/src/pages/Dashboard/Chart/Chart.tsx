@@ -202,7 +202,7 @@ export const PieChart = () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_JSON}`);
       const students = response.data;
-      const totalResultCounts: { [key: string]: number } = {};
+      const totalResultCounts: any = {};
 
       categories.forEach((category) => {
         totalResultCounts[category] = 0;
