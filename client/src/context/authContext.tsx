@@ -34,15 +34,9 @@ export const AuthProvider = ({ children }: any) => {
   }, [isAuthenticated]);
 
   return (
-    // <Auth0Provider
-    //   domain={"dev-1x51ocfjf18nwb0k.us.auth0.com"}
-    //   clientId={"9oaRmFO3L2wIKfp1wcIAsbiuj9CRcwZK"}
-    //   // redirectUri={window.location.origin}
-    // >
     <authContext.Provider value={{ authed, loginHandle, logoutHandle }}>
       {children}
     </authContext.Provider>
-    // </Auth0Provider>
   );
 };
 
