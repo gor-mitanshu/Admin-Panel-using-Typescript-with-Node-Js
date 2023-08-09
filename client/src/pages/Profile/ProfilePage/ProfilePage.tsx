@@ -2,9 +2,11 @@ import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Container, Typography, Button } from "@mui/material";
 import Loader from "loader/Loader";
+import { useNavigate } from "react-router-dom";
 
 const Profile: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
+  const navigate = useNavigate();
   console.log(user);
 
   if (isLoading) {
@@ -31,6 +33,7 @@ const Profile: React.FC = () => {
             style={{ marginTop: "5px !important" }}
             onClick={() => {
               // Handle profile update
+              navigate(`profile/updateprofile/${user?._id}`);
             }}
           >
             Update Profile
