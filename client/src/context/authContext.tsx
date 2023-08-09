@@ -1,42 +1,51 @@
-import React, { ReactNode, createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  // Auth0Provider,
+  useAuth0,
+} from "@auth0/auth0-react";
 
 interface AuthContextType {
   authed: boolean;
-  loginHandle: () => Promise<void>;
-  logoutHandle: () => Promise<void>;
+  loginHandle: () => void;
+  logoutHandle: () => void;
 }
 
 const authContext = createContext<AuthContextType | null>(null);
 
-function useAuth(): AuthContextType {
+export const AuthProvider = ({ children }: any) => {
   const [authed, setAuthed] = useState(false);
+  const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
 
   const loginHandle = () => {
-    return new Promise<void>(() => {
-      setAuthed(true);
-    });
+    loginWithRedirect();
   };
 
   const logoutHandle = () => {
-    return new Promise<void>(() => {
+    // logout({ returnTo: window.location.origin });
+    logout();
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setAuthed(true);
+    } else {
       setAuthed(false);
-    });
-  };
+    }
+  }, [isAuthenticated]);
 
-  return {
-    authed,
-    loginHandle,
-    logoutHandle,
-  };
-}
+  return (
+    // <Auth0Provider
+    //   domain={"dev-1x51ocfjf18nwb0k.us.auth0.com"}
+    //   clientId={"9oaRmFO3L2wIKfp1wcIAsbiuj9CRcwZK"}
+    //   // redirectUri={window.location.origin}
+    // >
+    <authContext.Provider value={{ authed, loginHandle, logoutHandle }}>
+      {children}
+    </authContext.Provider>
+    // </Auth0Provider>
+  );
+};
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const auth = useAuth();
-  return <authContext.Provider value={auth}>{children}</authContext.Provider>;
-}
-
-export function AuthConsumer() {
+export function useAuth() {
   return useContext(authContext);
 }
-
-export default AuthConsumer;

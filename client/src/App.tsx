@@ -1,59 +1,28 @@
 import React from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import "./App.css";
-import { AuthProvider } from "context/authContext";
-import ProtectedRoute from "protectedRoute/ProtectedRoute";
+import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "pages/Login/LoginPage";
 import Layout from "components/Layout/Layout";
 import Dashboard from "pages/Dashboard/DashboardPage";
 import ProfilePage from "pages/Profile/ProfilePage/ProfilePage";
 import ProfileUpdatePage from "pages/Profile/ProfileUpdatePage/ProfileUpdatePage";
+import { AuthProvider } from "context/authContext";
 
 function App() {
   return (
-    <>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile/updateprofile/:id"
-                element={
-                  <ProtectedRoute>
-                    <ProfileUpdatePage />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </>
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route
+            path="/profile/updateprofile/:id"
+            element={<ProfileUpdatePage />}
+          />
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }
 
