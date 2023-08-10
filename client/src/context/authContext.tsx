@@ -22,7 +22,8 @@ export const AuthProvider = ({ children }: any) => {
 
   const logoutHandle = () => {
     // logout({ returnTo: window.location.origin });
-    logout();
+    // logout();
+    logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
   useEffect(() => {
