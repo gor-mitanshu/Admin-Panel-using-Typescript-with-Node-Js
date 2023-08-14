@@ -3,11 +3,11 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { Container, Typography, Button } from "@mui/material";
 import Loader from "loader/Loader";
 import { useNavigate } from "react-router-dom";
+import "./ProfilePage.css";
 
 const Profile: React.FC = () => {
   const { user, isAuthenticated, isLoading, getIdTokenClaims } = useAuth0();
   const navigate = useNavigate();
-  console.log(user);
 
   const lel = async () => {
     const token = await getIdTokenClaims();
@@ -27,9 +27,12 @@ const Profile: React.FC = () => {
       <Typography className="profile-title">Profile</Typography>
       {isAuthenticated ? (
         <div>
+          {/* <img src={user?.picture} alt="" style={{ borderRadius: "50%" }} /> */}
           <Typography variant="body1" gutterBottom>
             <span className="label">Name:</span>{" "}
-            <span className="label-info">{user?.name}</span>
+            <span className="label-info">
+              {user?.given_name + " " + user?.family_name}
+            </span>
           </Typography>
           <Typography variant="body1" gutterBottom>
             <span className="label">Email:</span>{" "}
@@ -42,7 +45,7 @@ const Profile: React.FC = () => {
             style={{ marginTop: "5px !important" }}
             onClick={() => {
               // Handle profile update
-              navigate(`profile/updateprofile/${user?.user_id}`);
+              navigate(`/profile/updateprofile/${user?.sub}`);
             }}
           >
             Update Profile

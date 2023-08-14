@@ -23,7 +23,9 @@ export const AuthProvider = ({ children }: any) => {
   const logoutHandle = () => {
     // logout({ returnTo: window.location.origin });
     // logout();
-    logout({ logoutParams: { returnTo: window.location.origin } });
+    // logout({ logoutParams: { returnTo: window.location.origin } });
+    logout({ logoutParams: { returnTo: "http://localhost:3000/login" } });
+    console.log("logging out ...");
   };
 
   useEffect(() => {

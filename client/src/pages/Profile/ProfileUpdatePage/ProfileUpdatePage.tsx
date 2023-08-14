@@ -25,17 +25,17 @@ const UpdateProfile: React.FC = () => {
             margin="normal"
             label="First Name"
             name="firstname"
-            value={user?.name}
+            value={user?.given_name}
             // onChange={handleChange}
           />
-          {/* <TextField
+          <TextField
             fullWidth
             margin="normal"
             label="Last Name"
             name="lastname"
-            value={user?.lastname}
+            value={user?.family_name}
             // onChange={handleChange}
-          /> */}
+          />
           <TextField
             fullWidth
             margin="normal"
