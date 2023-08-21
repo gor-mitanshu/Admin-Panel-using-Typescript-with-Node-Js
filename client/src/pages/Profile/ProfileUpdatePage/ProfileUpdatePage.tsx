@@ -44,14 +44,6 @@ const UpdateProfile: React.FC = () => {
             value={user?.email}
             // onChange={handleChange}
           />
-          {/* <TextField
-            fullWidth
-            margin="normal"
-            label="Phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-          /> */}
           <Button
             variant="contained"
             color="error"
@@ -66,6 +58,7 @@ const UpdateProfile: React.FC = () => {
             variant="contained"
             color="primary"
             type="submit"
+            onClick={() => navigate("/profile")}
             // disabled={!isDataChanged}
           >
             Update Profile

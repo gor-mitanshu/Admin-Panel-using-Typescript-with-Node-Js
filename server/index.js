@@ -11,7 +11,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const colors = require("colors");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const authMiddleware = require("./middleware/authMiddleware");
+const { authMiddleware } = require("./middleware/authMiddleware");
+const { verifyToken } = require('./middleware/authMiddleware');
+
 
 mongoose.connect(process.env.MONGO_URL).then(e => {
      console.log(`Connection established with Database`.bgGreen.white)
@@ -25,37 +27,25 @@ app.get('/', (req, res) => {
 });
 
 // Admin Register
-app.post('/api/adminregister', async (req, res) => {
+app.post('/register', async (req, res) => {
      try {
-          let existingadmin = await User.findOne({ email: req.body.email });
-          if (!!existingadmin) {
-               return res.status(409).send({
-                    success: false,
-                    message: "Admin Already Registered!"
-               })
+          let existingUser = await User.findOne({ email: req.body.email, sub: req.body.sub });
+          if (!!existingUser) {
+               await User.findOneAndUpdate({ email: req.body.email },
+                    { $set: { email: req.body.email, email_verified: req.body.email_verified, family_name: req.body.family_name, given_name: req.body.given_name, nickname: req.body.nickname, picture: req.body.picture, name: req.body.name } }, { "new": true }
+               )
+               return res.status(201).json({ success: true, user: existingUser, message: 'Get User Successfully', });
           } else {
-               const user = new User({
-                    firstname: req.body.firstname,
-                    lastname: req.body.lastname,
-                    email: req.body.email,
-                    phone: req.body.phone,
-                    password: await bcrypt.hash(req.body.password, 10),
-                    role: "admin",
-               })
-               await user.save();
-               return res.status(200).send({
-                    success: true,
-                    message: "Successfully Registered",
-                    user: user
-               })
+               const { email, name, email_verified, family_name, given_name, nickname, picture, updated_at, sub } = req.body;
+               const newUser = new User({ name, email, email_verified, family_name, given_name, nickname, picture, updated_at, sub });
+               await newUser.save();
+
+               return res.status(201).json({ success: true, user: newUser, message: 'User registered successfully', });
           }
-     } catch (error) {
-          console.log(error);
-          res.status(404).send({
-               success: false,
-               message: "Something went wrong",
-               error
-          });
+
+     }
+     catch (error) {
+          return res.status(500).json({ message: 'Error registering user', success: false, error: error.message });
      }
 });
 
@@ -105,7 +95,7 @@ const protectedRoute = express.Router();
 app.use(authMiddleware);
 
 // Get User
-protectedRoute.get('/api/getuser', async (req, res) => {
+protectedRoute.get('/api/getuser', verifyToken, async (req, res) => {
      try {
           // Get the user ID from req.user
           const userId = req.user._id;
@@ -131,7 +121,7 @@ protectedRoute.get('/api/getuser', async (req, res) => {
 });
 
 // Update User
-protectedRoute.put('/api/updateuser/:id', async (req, res) => {
+protectedRoute.put('/api/updateuser/:id', verifyToken, async (req, res) => {
      try {
           // Get the user ID from req.user
           const userId = req.params.id;

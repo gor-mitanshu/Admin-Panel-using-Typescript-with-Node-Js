@@ -1,9 +1,39 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../Dashboard/DashboardPage.css";
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import { CurretWeekChart, LastWeekChart, PieChart } from "./Chart/Chart";
+import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
+import Loader from "loader/Loader";
 
 const Dashboard = (): JSX.Element => {
+  const { user, isLoading }: any = useAuth0();
+  const addUser = async () => {
+    const body = {
+      email: user?.email,
+      email_verified: user?.email_verified,
+      family_name: user?.family_name,
+      given_name: user?.given_name,
+      name: user?.name,
+      nickname: user?.nickname,
+      picture: user?.picture,
+      sub: user?.sub,
+      password: user?.password,
+      updated_at: user?.updated_at,
+    };
+    await axios.post(`${process.env.REACT_APP_API}/register`, body);
+  };
+  useEffect(() => {
+    if (user) {
+      addUser();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  if (isLoading) {
+    <Loader />;
+  }
+
   return (
     <>
       <Grid container padding={2} spacing={1}>
