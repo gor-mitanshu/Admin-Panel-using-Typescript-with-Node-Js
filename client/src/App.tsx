@@ -6,11 +6,8 @@ import Dashboard from "pages/Dashboard/DashboardPage";
 import ProfilePage from "pages/Profile/ProfilePage/ProfilePage";
 import ProfileUpdatePage from "pages/Profile/ProfileUpdatePage/ProfileUpdatePage";
 import { AuthProvider } from "context/authContext";
-import { useAuth0 } from "@auth0/auth0-react";
 
 function App() {
-  const { error } = useAuth0();
-  console.log(error);
   return (
     <AuthProvider>
       <Routes>

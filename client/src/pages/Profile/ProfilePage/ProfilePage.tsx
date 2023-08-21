@@ -4,10 +4,20 @@ import { Container, Typography, Button } from "@mui/material";
 import Loader from "loader/Loader";
 import { useNavigate } from "react-router-dom";
 import "./ProfilePage.css";
+import axios from "axios";
 
 const Profile: React.FC = () => {
-  const { user, isAuthenticated, isLoading, getIdTokenClaims } = useAuth0();
   const navigate = useNavigate();
+
+  const {
+    error,
+    getAccessTokenSilently,
+    user,
+    isAuthenticated,
+    isLoading,
+    getIdTokenClaims,
+  } = useAuth0();
+  console.log(error);
 
   const lel = async () => {
     const token = await getIdTokenClaims();
@@ -21,6 +31,35 @@ const Profile: React.FC = () => {
   if (isLoading) {
     return <Loader />;
   }
+
+  const callApi = () => {
+    axios.get("http://localhost:9558/").then((response) => {
+      console.log(response.data);
+    });
+  };
+
+  const protectedcallApi = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      console.log(token);
+      const response = await axios.get("http://localhost:9558/protected", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+    } catch (error: any) {
+      console.log(error.message);
+    }
+    // axios
+    //   .get("http://localhost:9558/protected")
+    //   .then((response) => {
+    //     console.log(response.data);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+  };
 
   return (
     <Container maxWidth="md">
@@ -50,6 +89,28 @@ const Profile: React.FC = () => {
           >
             Update Profile
           </Button>
+          <div style={{ marginTop: "50px" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginTop: "50px !important", marginRight: "20px" }}
+              onClick={() => {
+                callApi();
+              }}
+            >
+              Call API
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginTop: "50px !important" }}
+              onClick={() => {
+                protectedcallApi();
+              }}
+            >
+              Protected Route API{" "}
+            </Button>
+          </div>
         </div>
       ) : (
         <div>

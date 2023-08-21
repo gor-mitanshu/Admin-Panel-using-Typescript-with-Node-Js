@@ -21,6 +21,8 @@ root.render(
       clientId={clientId}
       authorizationParams={{
         redirect_uri: window.location.origin,
+        audience: "this is panel api",
+        scope: "openid profile email",
       }}
     >
       <Provider store={store}>
