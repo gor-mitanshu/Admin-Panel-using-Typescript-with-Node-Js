@@ -10,18 +10,18 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
 
   const {
-    error,
+    // error,
     // getAccessTokenSilently,
     user,
     isAuthenticated,
     isLoading,
-    getIdTokenClaims,
+    // getIdTokenClaims,
   } = useAuth0();
-  console.log(error);
+  // console.log(error);
 
   const lel = async () => {
-    const token = await getIdTokenClaims();
-    console.log(token);
+    // const token = await getIdTokenClaims();
+    // console.log(token);
   };
   useEffect(() => {
     lel();
@@ -48,7 +48,13 @@ const Profile: React.FC = () => {
             <span className="label">Email:</span>{" "}
             <span className="label-info">{user?.email}</span>
           </Typography>
-          {/* Other profile information here */}
+          {user?.phone_number ? (
+            <Typography variant="body1" gutterBottom>
+              <span className="label">Email:</span>{" "}
+              <span className="label-info">{user?.phone_number}</span>
+            </Typography>
+          ) : null}
+
           <Button
             variant="contained"
             color="primary"

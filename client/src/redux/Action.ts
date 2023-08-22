@@ -2,9 +2,7 @@ import axios from "axios"; //  { isAxiosError }
 import { Dispatch } from "redux";
 import {
   AuthActionTypes,
-  //  User
 } from "./types/authTypes";
-// import api from "utils/api";
 
 interface LoginRequestPayload {
   email: string;

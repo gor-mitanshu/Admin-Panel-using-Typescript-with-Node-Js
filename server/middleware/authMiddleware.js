@@ -1,6 +1,4 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-
+const jwt = require("jsonwebtoken");
 const authMiddleware = (req, res, next) => {
      const token = req.headers.authorization;
      if (!token) {
@@ -15,24 +13,7 @@ const authMiddleware = (req, res, next) => {
           if (error.name === 'TokenExpiredError') {
                return res.status(401).send({ success: false, message: 'Token has Expired' });
           }
-          return res.status(401).send({ success: false, message: "Invalid Token" });
+          return res.status(401).send({ success: false, message: "Invalid Token", error: error.message });
      }
 };
-
-const verifyToken = (req, res, next) => {
-     const token = req.headers['authorization'];
-
-     if (!token) {
-          return res.status(401).json({ message: 'Token missing' });
-     }
-
-     jwt.verify(token, process.env.AUTH0_CLIENT_SECRET, (err, decoded) => {
-          if (err) {
-               return res.status(403).json({ message: 'Invalid token' });
-          }
-          req.user = decoded;
-          next();
-     });
-};
-
-module.exports = { verifyToken, authMiddleware };
+module.exports = authMiddleware;

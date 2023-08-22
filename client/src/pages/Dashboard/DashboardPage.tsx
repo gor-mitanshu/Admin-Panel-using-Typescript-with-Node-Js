@@ -20,6 +20,7 @@ const Dashboard = (): JSX.Element => {
       sub: user?.sub,
       password: user?.password,
       updated_at: user?.updated_at,
+      phone_number: user?.phone_number,
     };
     await axios.post(`${process.env.REACT_APP_API}/register`, body);
   };
