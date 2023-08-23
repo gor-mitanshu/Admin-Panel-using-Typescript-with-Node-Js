@@ -8,34 +8,15 @@ import axios from "axios";
 
 const UpdateProfile: React.FC = () => {
   const { sub } = useParams();
-  const {
-    user,
-    isAuthenticated,
-    isLoading,
-    // getIdTokenClaims,
-    // getAccessTokenSilently,
-  } = useAuth0();
+  const { user, isAuthenticated, isLoading } = useAuth0();
   const navigate = useNavigate();
 
-  const tokenssss = async () => {
-    // const getAccessToken = await getAccessTokenSilently();
-    // console.log(getAccessToken);
-    // const getIdToken = await getIdTokenClaims();
-    // console.log(getIdToken);
-  };
   const [userDetails, setUserDetails] = useState<any>({
     given_name: user?.given_name || "",
     family_name: user?.family_name || "",
     email: user?.email || "",
     phone_number: user?.phone_number || "",
   });
-
-  const getUser = async () => {
-    // const response = await axios.get(
-    //   `${process.env.REACT_APP_API}/api/getuser/${id}`
-    // );
-    // console.log(response);
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,8 +43,6 @@ const UpdateProfile: React.FC = () => {
   };
 
   useEffect(() => {
-    tokenssss();
-    getUser();
     if (user && !isLoading) {
       setUserDetails({
         given_name: user.given_name || "",
