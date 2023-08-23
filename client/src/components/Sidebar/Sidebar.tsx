@@ -12,24 +12,14 @@ import {
 } from "@mui/material";
 import { Dashboard, Logout, Person } from "@mui/icons-material";
 import "../Sidebar/Sidebar.css";
-// import { useNavigate } from "react-router-dom";
-// import { useDispatch } from "react-redux";
-// import { logout } from "redux/Action";
-// import { useAuth } from "../../context/authContext";
 import { NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const Sidebar = (): JSX.Element => {
-  // const navigate = useNavigate();
-  // const dispatch = useDispatch();
-  // const { logoutHandle }: any = useAuth();
   const { logout } = useAuth0();
 
   const handleLogout = async () => {
-    // await dispatch<any>(logout());
-    // logoutHandle();
     logout({ logoutParams: { returnTo: "http://localhost:3000/login" } });
-    // navigate("/login");
   };
   return (
     <>
