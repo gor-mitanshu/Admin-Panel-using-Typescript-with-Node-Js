@@ -8,8 +8,8 @@ import { PersistGate } from "redux-persist/integration/react";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { BrowserRouter as Router } from "react-router-dom";
 
-const domainId = "dev-1x51ocfjf18nwb0k.us.auth0.com";
-const clientId = "hlEvO2FIh0eJ9cnB3PpBZOw5CrjUf9Ml";
+const domainID: any = process.env.REACT_APP_AUTH0_MANAGEMENT_DOMAIN;
+const clientID: any = process.env.REACT_APP_AUTH0_MANAGEMENT_CLIENT_ID;
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -17,12 +17,12 @@ const root = ReactDOM.createRoot(
 root.render(
   <Router>
     <Auth0Provider
-      domain={domainId}
-      clientId={clientId}
+      domain={domainID}
+      clientId={clientID}
       authorizationParams={{
         redirect_uri: window.location.origin,
-        audience: "this is panel api",
-        scope: "openid profile email",
+        audience: process.env.REACT_APP_AUTH0_MANAGEMENT_AUDIENCE,
+        scope: process.env.REACT_APP_AUTH0_MANAGEMENT_SCOPE,
       }}
     >
       <Provider store={store}>

@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 // Admin Register
 app.post('/register', async (req, res) => {
      try {
-          let existingUser = await User.findOne({ email: req.body.email, sub: req.body.sub });
+          let existingUser = await User.findOne({ sub: req.body.sub });
           if (!!existingUser) {
                await User.findOneAndUpdate({ email: req.body.email },
                     { $set: { email: req.body.email, email_verified: req.body.email_verified, family_name: req.body.family_name, given_name: req.body.given_name, nickname: req.body.nickname, picture: req.body.picture, name: req.body.name } }, { "new": true }
@@ -106,7 +106,6 @@ app.get('/api/getuser/:id', async (req, res) => {
 
 // Update User
 app.put('/api/updateuser/:sub', async (req, res) => {
-     console.log(req.body)
      try {
           const result = await User.findOneAndUpdate({ sub: req.params.sub },
                { $set: { given_name: req.body.given_name, family_name: req.body.family_name, email: req.body.email, phone_number: req.body.phone_number } },
