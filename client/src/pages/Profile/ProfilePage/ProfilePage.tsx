@@ -8,13 +8,20 @@ import "./ProfilePage.css";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently } =
+    useAuth0();
   const [userData, setUserData] = useState<any>(null);
 
   const fetchUserData = async () => {
     try {
+      const accessToken = await getAccessTokenSilently();
       const response = await axios.get(
-        `${process.env.REACT_APP_API}/api/getuser/${user?.sub}`
+        `${process.env.REACT_APP_API}/api/getuser/${user?.sub}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
       if (response.status === 200) {
         setUserData(response.data.data);

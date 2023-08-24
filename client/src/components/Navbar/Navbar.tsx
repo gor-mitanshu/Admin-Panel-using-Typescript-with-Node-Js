@@ -29,22 +29,8 @@ const Navbar = ({ toogleSidebar }: any): JSX.Element => {
                       alignItems: "center",
                     }}
                   >
-                    {/* <img
-                      src={user?.picture}
-                      alt=""
-                      style={{
-                        background: "white",
-                        height: "40px",
-                        width: "40px",
-                        borderRadius: "50%",
-                      }}
-                    /> */}
                     <Typography className="navbar-name">
-                      {/* <span className="loggedInRole">
-                      {user?.family_name?.toUpperCase()}
-                    </span> */}
                       <span className="loggedInName">
-                        {" "}
                         {user?.family_name?.toUpperCase() +
                           " " +
                           user?.given_name?.toUpperCase()}

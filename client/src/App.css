@@ -2,22 +2,3 @@
   margin: 0;
   padding: 0;
 }
-/* .label::selection {
-  background-color: green !important;
-}
-.label-info::selection {
-  background-color: red !important;
-}
-.profile-title::selection {
-  background-color: yellow !important;
-}
-.navbar-title::selection {
-  background-color: whitesmoke !important;
-  color: brown !important;
-}
-.loggedInRole::selection {
-  background-color: aqua !important;
-}
-.loggedInName::selection {
-  background-color: darkblue !important;
-} */

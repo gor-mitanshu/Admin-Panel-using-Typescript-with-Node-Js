@@ -4,10 +4,12 @@ import { Container, TextField, Button, Typography } from "@mui/material";
 import "./ProfileUpdatePage.css";
 import axios from "axios";
 import Loader from "loader/Loader";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const UpdateProfile = () => {
   const { sub } = useParams();
   const navigate = useNavigate();
+  const { getAccessTokenSilently } = useAuth0();
 
   const [userDetails, setUserDetails] = useState({
     given_name: "",
@@ -19,8 +21,14 @@ const UpdateProfile = () => {
 
   const fetchUserData = async () => {
     try {
+      const accessToken = await getAccessTokenSilently();
       const response = await axios.get(
-        `${process.env.REACT_APP_API}/api/getuser/${sub}`
+        `${process.env.REACT_APP_API}/api/getuser/${sub}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
       if (response.status === 200) {
         const userData = response.data.data;
@@ -48,10 +56,22 @@ const UpdateProfile = () => {
   const handleUpdate = async (e: any) => {
     e.preventDefault();
     try {
+      const accessToken = await getAccessTokenSilently();
       const response = await axios.put(
         `${process.env.REACT_APP_API}/api/updateuser/${sub}`,
-        userDetails
+        {
+          given_name: userDetails.given_name,
+          family_name: userDetails.family_name,
+          email: userDetails.email,
+          phone_number: userDetails.phone_number,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
+
       if (response.status === 200 && response.data.success === true) {
         navigate("/profile");
       }

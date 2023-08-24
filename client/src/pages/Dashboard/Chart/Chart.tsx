@@ -1,7 +1,7 @@
 import { Card } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ReactEcharts from "echarts-for-react";
-import * as echarts from "echarts"; // Import the echarts library
+import * as echarts from "echarts";
 import axios from "axios";
 
 export const CurretWeekChart = () => {

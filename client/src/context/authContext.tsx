@@ -1,8 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  // Auth0Provider,
-  useAuth0,
-} from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface AuthContextType {
   authed: boolean;
@@ -21,11 +18,7 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   const logoutHandle = () => {
-    // logout({ returnTo: window.location.origin });
-    // logout();
-    // logout({ logoutParams: { returnTo: window.location.origin } });
     logout({ logoutParams: { returnTo: "http://localhost:3000/login" } });
-    console.log("logging out ...");
   };
 
   useEffect(() => {
