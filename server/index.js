@@ -4,15 +4,13 @@ require('dotenv').config();
 const cors = require("cors");
 app.use(cors());
 const mongoose = require('mongoose');
-const User = require('./models/UserSchema');
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 const colors = require("colors");
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const authMiddleware = require("./middleware/authMiddleware");
-
+const User = require('./models/UserSchema');
+const jwtCheck = require('./middleware/authMiddleware');
+const auth0 = require('auth0');
 
 mongoose.connect(process.env.MONGO_URL).then(e => {
      console.log(`Connection established with Database`.bgYellow.white)
@@ -23,6 +21,13 @@ app.listen(PORT, () => {
 });
 app.get('/', (req, res) => {
      res.send(`hello API`)
+});
+
+// Create an Auth0 management client instance
+const auth0Management = new auth0.ManagementClient({
+     domain: process.env.AUTH0_DOMAIN,
+     clientId: process.env.AUTH0_CLIENT_ID,
+     clientSecret: process.env.AUTH0_CLIENT_SECRET,
 });
 
 // Admin Register
@@ -48,49 +53,8 @@ app.post('/register', async (req, res) => {
      }
 });
 
-// Login
-app.post('/api/login', async (req, res) => {
-     try {
-          const user = await User.findOne({ email: req.body.email });
-          if (!!user) {
-               const hashedPassword = await bcrypt.compare(req.body.password, user.password);
-               if (!!hashedPassword) {
-                    const expiresIn = 500000;
-                    const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn });
-                    return res.status(200).send({
-                         success: true,
-                         message: "Login Successful",
-                         result: { token, expiresIn }
-                    })
-               } else {
-                    return res.status(401).send({
-                         success: false,
-                         message: "Invalid Password",
-                    })
-               }
-          } else {
-               return res.status(400).send({
-                    success: false,
-                    message: "User Not Found",
-               })
-          }
-     } catch (error) {
-          console.log(error);
-          res.status(404).send({
-               success: false,
-               message: "Something went wrong",
-               error
-          });
-     }
-});
-
-
-// Protected Route 
-// const protectedRoute = express.Router();
-// app.use(authMiddleware);
-
 // Get user
-app.get('/api/getuser/:id', async (req, res) => {
+app.get('/api/getuser/:id', jwtCheck, async (req, res) => {
      try {
           const getUser = await User.findOne({ sub: req.params.id })
           if (getUser) {
@@ -105,22 +69,43 @@ app.get('/api/getuser/:id', async (req, res) => {
 });
 
 // Update User
-app.put('/api/updateuser/:sub', async (req, res) => {
+app.put('/api/updateuser/:sub', jwtCheck, async (req, res) => {
      try {
-          const result = await User.findOneAndUpdate({ sub: req.params.sub },
-               { $set: { given_name: req.body.given_name, family_name: req.body.family_name, email: req.body.email, phone_number: req.body.phone_number } },
+          const sub = req.params.sub;
+          const { given_name, family_name, email, phone_number } = req.body;
+          // Update user in MongoDB
+          const result = await User.findOneAndUpdate(
+               { sub: sub },
+               { $set: { given_name, family_name, email, phone_number } },
                { new: true }
-          )
+          );
+          // Update user_metadata in Auth0
+          const auth0User = await auth0Management.getUser({ id: sub });
+          if (auth0User) {
+               // Update user_metadata with phone_number
+               const updatedMetadata = {
+                    given_name,
+                    family_name,
+                    email,
+                    phone_number,
+               };
+               await auth0Management.updateUserMetadata({ id: sub }, updatedMetadata);
+          }
           if (result) {
-               return res.status(200).send({ message: "Updated Successfully", success: true, user: result })
+               return res.status(200).send({ message: "Updated Successfully", success: true, user: result });
           } else {
                return res.status(400).send({
                     success: false,
-                    message: "Error Updating"
-               })
+                    message: "Error Updating",
+               });
           }
-     }
-     catch (error) {
+     } catch (error) {
           return res.status(401).json({ message: 'Error Updating User', success: false, error: error.message });
+     }
+});
+
+app.use((err, req, res, next) => {
+     if (err.name === 'UnauthorizedError') {
+          res.status(401).json({ success: false, message: 'Unauthorized' });
      }
 });
