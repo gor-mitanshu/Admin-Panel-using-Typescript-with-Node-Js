@@ -23,13 +23,6 @@ app.get('/', (req, res) => {
      res.send(`hello API`)
 });
 
-// Create an Auth0 management client instance
-const auth0Management = new auth0.ManagementClient({
-     domain: process.env.AUTH0_DOMAIN,
-     clientId: process.env.AUTH0_CLIENT_ID,
-     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-});
-
 // Admin Register
 app.post('/register', async (req, res) => {
      try {
@@ -69,6 +62,13 @@ app.get('/api/getuser/:id', jwtCheck, async (req, res) => {
 
 // Update User
 app.put('/api/updateuser/:sub', async (req, res) => {
+     // Create an Auth0 management client instance
+     const auth0Management = new auth0.ManagementClient({
+          domain: process.env.AUTH0_DOMAIN,
+          clientId: process.env.AUTH0_CLIENT_ID,
+          clientSecret: process.env.AUTH0_CLIENT_SECRET,
+     });
+
      try {
           const sub = req.params.sub;
           const { given_name, family_name, email, phone_number } = req.body;
